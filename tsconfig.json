@@ -8,6 +8,13 @@
     "build"
   ],
   "compilerOptions": {
+    "strict": true,
+    "noImplicitAny": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "strictPropertyInitialization": false,
+    "importsNotUsedAsValues": "error",
+    "skipLibCheck": true,
     "outDir": "build",
     "rootDir": "./",
     "sourceMap": true,
@@ -31,6 +38,6 @@
       "@adonisjs/lucid",
       "@adonisjs/auth",
       "@adonisjs/ally"
-    ]
+    ],
   }
 }
