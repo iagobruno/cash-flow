@@ -2,6 +2,7 @@ import { BaseModel, beforeCreate, column, hasMany } from '@ioc:Adonis/Lucid/Orm'
 import type { HasMany } from '@ioc:Adonis/Lucid/Relations'
 import { DateTime } from 'luxon'
 import { v4 as uuid } from 'uuid'
+import Account from 'App/Models/Account'
 
 export default class User extends BaseModel {
   public static selfAssignPrimaryKey = true
@@ -29,6 +30,12 @@ export default class User extends BaseModel {
 
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   public updatedAt: DateTime
+
+
+  //#region Relationships
+  @hasMany(() => Account)
+  public accounts: HasMany<typeof Account>
+  //#endregion Relationships
 
 
   //#region Hooks
