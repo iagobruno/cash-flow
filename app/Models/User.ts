@@ -4,6 +4,7 @@ import { DateTime } from 'luxon'
 import { v4 as uuid } from 'uuid'
 import Account from 'App/Models/Account'
 import Transaction from 'App/Models/Transaction'
+import Category from 'App/Models/Category'
 
 export default class User extends BaseModel {
   public static selfAssignPrimaryKey = true
@@ -39,6 +40,9 @@ export default class User extends BaseModel {
 
   @hasMany(() => Transaction)
   public transactions: HasMany<typeof Transaction>
+
+  @hasMany(() => Category)
+  public categories: HasMany<typeof Category>
   //#endregion Relationships
 
 

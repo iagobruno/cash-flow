@@ -3,6 +3,7 @@ import { DateTime } from 'luxon'
 import { v4 as uuid } from 'uuid'
 import Account from 'App/Models/Account'
 import User from 'App/Models/User'
+import Category from 'App/Models/Category'
 
 export default class Transaction extends BaseModel {
   public static table = 'account_transactions'
@@ -16,6 +17,9 @@ export default class Transaction extends BaseModel {
 
   @column()
   public accountId: string
+
+  @column()
+  public categoryId: string
 
   @column()
   public title: string
@@ -34,7 +38,7 @@ export default class Transaction extends BaseModel {
 
   @computed()
   public get kind() {
-    return this.amount < 0 ? 'expensive' : 'income'
+    return this.amount < 0 ? 'outgo' : 'income'
   }
 
 
@@ -44,6 +48,9 @@ export default class Transaction extends BaseModel {
 
   @belongsTo(() => Account)
   public accounts: BelongsTo<typeof Account>
+
+  @belongsTo(() => Category)
+  public category: BelongsTo<typeof Category>
   //#endregion Relationships
 
 

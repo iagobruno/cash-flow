@@ -7,6 +7,7 @@ export default class DatabaseSeeder extends BaseSeeder {
 
   public async run() {
     // Clean up database
+    await Database.from('user_categories').delete()
     await Database.from('account_transactions').delete()
     await Database.from('user_accounts').delete()
     await Database.from('users').delete()
@@ -29,16 +30,37 @@ export default class DatabaseSeeder extends BaseSeeder {
       icon: 'nubank'
     })
 
+    const cat1 = await user.related('categories').create({
+      kind: 'outgo',
+      name: 'Entretenimento',
+      color: 'yellow',
+      icon: 'pc',
+    })
+    const cat2 = await user.related('categories').create({
+      kind: 'outgo',
+      name: 'Supermercado',
+      color: 'purple',
+      icon: 'cart',
+    })
+    const cat3 = await user.related('categories').create({
+      kind: 'income',
+      name: 'Freela de barman',
+      color: 'green',
+      icon: 'drink',
+    })
+
     await account1.related('transactions').createMany([
       {
         amount: 150,
         title: 'Pagamento do freela de hoje',
         userId: user.id,
+        categoryId: cat3.id
       },
       {
         amount: -45,
         title: 'Compras no supermercado',
         userId: user.id,
+        categoryId: cat2.id
       }
     ])
     await account2.related('transactions').createMany([
@@ -46,11 +68,13 @@ export default class DatabaseSeeder extends BaseSeeder {
         amount: -16.90,
         title: 'Spotify',
         userId: user.id,
+        categoryId: cat1.id
       },
       {
         amount: -22,
         title: 'Netflix',
         userId: user.id,
+        categoryId: cat1.id
       }
     ])
   }
