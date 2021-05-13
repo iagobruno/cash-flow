@@ -3,6 +3,7 @@ import type { HasMany } from '@ioc:Adonis/Lucid/Relations'
 import { DateTime } from 'luxon'
 import { v4 as uuid } from 'uuid'
 import Account from 'App/Models/Account'
+import Transaction from 'App/Models/Transaction'
 
 export default class User extends BaseModel {
   public static selfAssignPrimaryKey = true
@@ -35,6 +36,9 @@ export default class User extends BaseModel {
   //#region Relationships
   @hasMany(() => Account)
   public accounts: HasMany<typeof Account>
+
+  @hasMany(() => Transaction)
+  public transactions: HasMany<typeof Transaction>
   //#endregion Relationships
 
 

@@ -13,7 +13,7 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "strictPropertyInitialization": false,
-    "importsNotUsedAsValues": "error",
+    // "importsNotUsedAsValues": "error",
     "skipLibCheck": true,
     "outDir": "build",
     "rootDir": "./",

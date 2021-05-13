@@ -1,7 +1,8 @@
-import { BaseModel, beforeCreate, belongsTo, column, BelongsTo } from '@ioc:Adonis/Lucid/Orm'
+import { BaseModel, beforeCreate, belongsTo, HasMany, column, BelongsTo, hasMany } from '@ioc:Adonis/Lucid/Orm'
 import { DateTime } from 'luxon'
 import { v4 as uuid } from 'uuid'
 import User from 'App/Models/User'
+import Transaction from 'App/Models/Transaction'
 
 export default class Account extends BaseModel {
   public static table = 'user_accounts'
@@ -38,6 +39,9 @@ export default class Account extends BaseModel {
   //#region Relationships
   @belongsTo(() => User)
   public user: BelongsTo<typeof User>
+
+  @hasMany(() => Transaction)
+  public transactions: HasMany<typeof Transaction>
   //#endregion Relationships
 
 

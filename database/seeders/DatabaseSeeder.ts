@@ -7,6 +7,7 @@ export default class DatabaseSeeder extends BaseSeeder {
 
   public async run() {
     // Clean up database
+    await Database.from('account_transactions').delete()
     await Database.from('user_accounts').delete()
     await Database.from('users').delete()
 
@@ -27,5 +28,30 @@ export default class DatabaseSeeder extends BaseSeeder {
       color: '#612F74',
       icon: 'nubank'
     })
+
+    await account1.related('transactions').createMany([
+      {
+        amount: 150,
+        title: 'Pagamento do freela de hoje',
+        userId: user.id,
+      },
+      {
+        amount: -45,
+        title: 'Compras no supermercado',
+        userId: user.id,
+      }
+    ])
+    await account2.related('transactions').createMany([
+      {
+        amount: -16.90,
+        title: 'Spotify',
+        userId: user.id,
+      },
+      {
+        amount: -22,
+        title: 'Netflix',
+        userId: user.id,
+      }
+    ])
   }
 }

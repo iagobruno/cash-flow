@@ -1,6 +1,7 @@
 import Factory from '@ioc:Adonis/Lucid/Factory'
 import User from 'App/Models/User'
 import { AccountFactory } from './AccountFactory'
+import { TransactionFactory } from './TransactionFactory'
 
 export const UserFactory = Factory.define(User, ({ faker }) => {
   return {
@@ -10,4 +11,5 @@ export const UserFactory = Factory.define(User, ({ faker }) => {
   }
 })
   .relation('accounts', () => AccountFactory)
+  .relation('transactions', () => TransactionFactory)
   .build()
