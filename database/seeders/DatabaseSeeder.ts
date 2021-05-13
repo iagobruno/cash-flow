@@ -16,19 +16,15 @@ export default class DatabaseSeeder extends BaseSeeder {
     const user = await UserFactory.create()
 
     const account1 = await user.related('accounts').create({
-      name: 'Carteira',
-      balanceCache: 22.05,
-      bank: null,
-      color: '#2AB14C',
-      icon: 'currency'
-    })
-    const account2 = await user.related('accounts').create({
       name: 'NuConta',
       balanceCache: 125.37,
       bank: 'nubank',
       color: '#612F74',
       icon: 'nubank'
     })
+    const account2 = await user.related('accounts').query()
+      .where('name', '=', 'Carteira')
+      .firstOrFail()
 
     const cat1 = await user.related('categories').create({
       kind: 'outgo',
@@ -36,12 +32,9 @@ export default class DatabaseSeeder extends BaseSeeder {
       color: 'yellow',
       icon: 'pc',
     })
-    const cat2 = await user.related('categories').create({
-      kind: 'outgo',
-      name: 'Supermercado',
-      color: 'purple',
-      icon: 'cart',
-    })
+    const cat2 = await user.related('categories').query()
+      .where('name', '=', 'Supermercado')
+      .firstOrFail()
     const cat3 = await user.related('categories').create({
       kind: 'income',
       name: 'Freela de barman',
@@ -49,7 +42,7 @@ export default class DatabaseSeeder extends BaseSeeder {
       icon: 'drink',
     })
 
-    await account1.related('transactions').createMany([
+    await account2.related('transactions').createMany([
       {
         amount: 150,
         title: 'Pagamento do freela de hoje',
@@ -63,7 +56,7 @@ export default class DatabaseSeeder extends BaseSeeder {
         categoryId: cat2.id
       }
     ])
-    await account2.related('transactions').createMany([
+    await account1.related('transactions').createMany([
       {
         amount: -16.90,
         title: 'Spotify',

@@ -12,7 +12,7 @@ export default class Account extends BaseModel {
   public id: string
 
   @column()
-  public userId: number
+  public userId: string
 
   @column()
   public name: string

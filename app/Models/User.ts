@@ -1,4 +1,4 @@
-import { BaseModel, beforeCreate, column, hasMany } from '@ioc:Adonis/Lucid/Orm'
+import { afterCreate, BaseModel, beforeCreate, column, hasMany } from '@ioc:Adonis/Lucid/Orm'
 import type { HasMany } from '@ioc:Adonis/Lucid/Relations'
 import { DateTime } from 'luxon'
 import { v4 as uuid } from 'uuid'
@@ -48,13 +48,57 @@ export default class User extends BaseModel {
 
   //#region Hooks
   @beforeCreate()
-  public static assignUuid(user: User) {
+  public static async beforeCreate(user: User) {
     user.id = uuid()
+    user.balanceCache = 0
   }
 
-  @beforeCreate()
-  public static async beforeCreate(user: User) {
-    user.balanceCache = 0
+  @afterCreate()
+  public static async createInitialUserData(user: User) {
+    await user.related('accounts').create({
+      name: 'Carteira',
+      balanceCache: 0,
+      color: 'green',
+      icon: 'wallet',
+    })
+    await user.related('categories').createMany([
+      {
+        kind: 'income',
+        name: 'Salário',
+        icon: 'money',
+        color: 'green',
+      },
+      {
+        kind: 'income',
+        name: 'Freelas',
+        icon: 'money',
+        color: 'green',
+      },
+      {
+        kind: 'outgo',
+        name: 'Supermercado',
+        icon: 'cart',
+        color: 'orange',
+      },
+      {
+        kind: 'outgo',
+        name: 'Transporte',
+        icon: 'car',
+        color: 'black',
+      },
+      {
+        kind: 'outgo',
+        name: 'Alimentação',
+        icon: 'fooad',
+        color: 'blue',
+      },
+      {
+        kind: 'outgo',
+        name: 'Casa',
+        icon: 'house',
+        color: 'yellow',
+      }
+    ])
   }
   //#endregion Hooks
 }
