@@ -1,5 +1,5 @@
-import { GuardsList } from '@ioc:Adonis/Addons/Auth'
-import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
+import type { GuardsList } from '@ioc:Adonis/Addons/Auth'
+import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import { AuthenticationException } from '@adonisjs/auth/build/standalone'
 
 /**
