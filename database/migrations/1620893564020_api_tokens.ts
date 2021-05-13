@@ -13,7 +13,7 @@ export default class extends BaseSchema {
         .onDelete('CASCADE')
       table.string('name').notNullable()
       table.string('type').notNullable()
-      table.string('token', 64).notNullable().unique()
+      table.string('token', 64).notNullable().unique().index()
 
       /**
        * "useTz: true" utilizes timezone option in PostgreSQL and MSSQL
