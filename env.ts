@@ -21,6 +21,11 @@ export default Env.rules({
 	APP_NAME: Env.schema.string(),
 	NODE_ENV: Env.schema.enum(['development', 'production', 'testing'] as const),
 	SESSION_DRIVER: Env.schema.string(),
+	DB_HOST: Env.schema.string({ format: 'host' }),
+	DB_PORT: Env.schema.number(),
+	DB_USER: Env.schema.string(),
+	DB_PASSWORD: Env.schema.string.optional(),
+	DB_NAME: Env.schema.string(),
 	GOOGLE_CLIENT_ID: Env.schema.string(),
 	GOOGLE_CLIENT_SECRET: Env.schema.string(),
 })
