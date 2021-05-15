@@ -5,7 +5,7 @@ export default class extends BaseSchema {
 
   public async up() {
     this.schema.createTable(this.tableName, (table) => {
-      table.string('id').unique().notNullable().index()
+      table.string('id').primary()
       table.decimal('amount').notNullable()
       table.string('title').nullable()
       table.text('note').nullable()
@@ -19,6 +19,7 @@ export default class extends BaseSchema {
         .references('id').inTable('user_accounts')
         .onUpdate('CASCADE')
         .onDelete('CASCADE')
+      table.boolean('editable').defaultTo(true).notNullable()
       table.timestamps(true)
     })
   }

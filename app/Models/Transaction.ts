@@ -30,6 +30,9 @@ export default class Transaction extends BaseModel {
   @column()
   public note: string
 
+  @column()
+  public editable: boolean
+
   @column.dateTime({ autoCreate: true })
   public createdAt: DateTime
 
@@ -47,7 +50,7 @@ export default class Transaction extends BaseModel {
   public user: BelongsTo<typeof User>
 
   @belongsTo(() => Account)
-  public accounts: BelongsTo<typeof Account>
+  public account: BelongsTo<typeof Account>
 
   @belongsTo(() => Category)
   public category: BelongsTo<typeof Category>

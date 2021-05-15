@@ -5,7 +5,7 @@ export default class extends BaseSchema {
 
   public async up() {
     this.schema.createTable(this.tableName, (table) => {
-      table.string('id').unique().notNullable().index()
+      table.string('id').primary()
       table.enum('kind', ['income', 'outgo']).notNullable()
       table.string('name').notNullable().index()
       table.string('icon', 100).notNullable()

@@ -11,5 +11,5 @@ export const TransactionFactory = Factory.define(Transaction, ({ faker }) => {
   }
 })
   .relation('user', () => UserFactory)
-  .relation('accounts', () => AccountFactory)
+  .relation('account', () => AccountFactory)
   .build()
