@@ -7,6 +7,7 @@ import sourceMapSupport from 'source-map-support'
 process.env.NODE_ENV = 'testing'
 process.env.ADONIS_ACE_CWD = join(__dirname)
 sourceMapSupport.install({ handleUncaughtExceptions: false })
+console.clear()
 
 /**
  * Configure test runner
@@ -16,6 +17,7 @@ japa.configure({
   before: [startHttpServer],
   after: [closeDatabaseConnection],
   bail: true,
+  timeout: 1000 * 10,
 })
 
 function getTestFiles() {
