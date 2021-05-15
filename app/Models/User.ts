@@ -21,8 +21,9 @@ export default class User extends BaseModel {
   @column()
   public photoUrl: string
 
-  @column({ serializeAs: 'balance' })
-  public balanceCache: number
+  /** Cache do saldo total do usuário para evitar consultas ao banco de dados */
+  @column({ columnName: 'balance_cache' })
+  public balance: number
 
   @column({ serializeAs: null })
   public accessToken?: string

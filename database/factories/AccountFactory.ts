@@ -3,10 +3,10 @@ import Account from 'App/Models/Account'
 import { TransactionFactory } from './TransactionFactory'
 import { UserFactory } from './UserFactory'
 
-export const AccountFactory = Factory.define(Account, ({ }) => {
+export const AccountFactory = Factory.define(Account, ({ faker }) => {
   return {
     name: 'Carteira',
-    balanceCache: 0,
+    balance: faker.datatype.number({ min: 0, max: 1000 }),
     bank: null,
     color: '#000',
     icon: 'wallet',

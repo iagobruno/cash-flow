@@ -1,7 +1,7 @@
 import BaseSchema from '@ioc:Adonis/Lucid/Schema'
 
 export default class extends BaseSchema {
-  protected tableName = 'account_transactions'
+  protected tableName = 'accounts_transactions'
 
   public async up() {
     this.schema.createTable(this.tableName, (table) => {
@@ -16,12 +16,7 @@ export default class extends BaseSchema {
         .onDelete('CASCADE')
       table.string('account_id')
         .notNullable()
-        .references('id').inTable('accounts')
-        .onUpdate('CASCADE')
-        .onDelete('CASCADE')
-      table.string('category_id')
-        .notNullable()
-        .references('id').inTable('categories')
+        .references('id').inTable('user_accounts')
         .onUpdate('CASCADE')
         .onDelete('CASCADE')
       table.timestamps(true)

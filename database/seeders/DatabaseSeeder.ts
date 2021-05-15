@@ -8,7 +8,7 @@ export default class DatabaseSeeder extends BaseSeeder {
   public async run() {
     // Clean up database
     await Database.from('user_categories').delete()
-    await Database.from('account_transactions').delete()
+    await Database.from('accounts_transactions').delete()
     await Database.from('user_accounts').delete()
     await Database.from('users').delete()
 
@@ -17,7 +17,7 @@ export default class DatabaseSeeder extends BaseSeeder {
 
     const account1 = await user.related('accounts').create({
       name: 'NuConta',
-      balanceCache: 125.37,
+      balance: 125.37,
       bank: 'nubank',
       color: '#612F74',
       icon: 'nubank'

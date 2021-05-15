@@ -17,9 +17,21 @@ export default class extends BaseSchema {
         .onDelete('CASCADE')
       table.timestamps(true)
     })
+
+    this.schema.alterTable('accounts_transactions', table => {
+      table.string('category_id')
+        .notNullable()
+        .references('id').inTable('user_categories')
+        .onUpdate('CASCADE')
+        .onDelete('CASCADE')
+    })
   }
 
   public async down() {
+    this.schema.alterTable('accounts_transactions', table => {
+      table.dropColumn('category_id')
+    })
+
     this.schema.dropTable(this.tableName)
   }
 }

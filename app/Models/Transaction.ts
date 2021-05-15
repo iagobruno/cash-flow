@@ -6,7 +6,7 @@ import User from 'App/Models/User'
 import Category from 'App/Models/Category'
 
 export default class Transaction extends BaseModel {
-  public static table = 'account_transactions'
+  public static table = 'accounts_transactions'
   public static selfAssignPrimaryKey = true
 
   @column({ isPrimary: true })

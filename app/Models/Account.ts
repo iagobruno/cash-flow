@@ -17,8 +17,9 @@ export default class Account extends BaseModel {
   @column()
   public name: string
 
-  @column()
-  public balanceCache: number
+  /** Cache do saldo da conta para evitar consultas ao banco de dados */
+  @column({ columnName: 'balance_cache' })
+  public balance: number
 
   @column()
   public bank?: string | null

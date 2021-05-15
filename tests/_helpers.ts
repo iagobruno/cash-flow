@@ -10,7 +10,7 @@ export const BASE_URL = `http://${process.env.HOST}:${process.env.PORT}`
 export async function cleanUpDatabase() {
   await Promise.all([
     Database.from('user_categories').delete(),
-    Database.from('account_transactions').delete(),
+    Database.from('accounts_transactions').delete(),
     Database.from('user_accounts').delete(),
     Database.from('api_tokens').delete(),
   ])
