@@ -1,4 +1,5 @@
-import { BaseModel, beforeCreate, belongsTo, HasMany, column, BelongsTo, hasMany } from '@ioc:Adonis/Lucid/Orm'
+import { BaseModel, beforeCreate, belongsTo, HasMany, column, BelongsTo, hasMany, beforeSave } from '@ioc:Adonis/Lucid/Orm'
+import Database, { TransactionClientContract } from '@ioc:Adonis/Lucid/Database'
 import { DateTime } from 'luxon'
 import { v4 as uuid } from 'uuid'
 import User from 'App/Models/User'
@@ -18,8 +19,8 @@ export default class Account extends BaseModel {
   public name: string
 
   /** Cache do saldo da conta para evitar consultas ao banco de dados */
-  @column({ columnName: 'balance_cache' })
-  public balance: number
+  @column({ columnName: 'balance_cache', consume: Number })
+  public readonly balance: number
 
   @column()
   public bank?: string | null
@@ -35,6 +36,37 @@ export default class Account extends BaseModel {
 
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   public updatedAt: DateTime
+
+
+  //#region Methods
+  public async recalcBalance($trx?: TransactionClientContract) {
+    const newAccountBalance = await Database.query()
+      .sum('amount AS total')
+      .from('accounts_transactions')
+      .where('account_id', '=', this.id)
+      .andWhere('user_id', '=', this.userId)
+      .groupBy('account_id')
+      .if($trx, query => query.useTransaction($trx!))
+      .then(rows => {
+        if (!rows || rows.length === 0) return 0
+        return Number(rows[0].total)
+      })
+
+    const account = this as Account
+    await Database.query()
+      .from('user_accounts')
+      .update('balance_cache', newAccountBalance)
+      .where('id', '=', account.id)
+      .limit(1)
+      .if($trx, query => query.useTransaction($trx!))
+
+    // Recalcular automaticamente o balanço da conta do usuário
+    if (!account.user) await account.load('user')
+    await account.user.recalcBalance($trx)
+
+    return newAccountBalance
+  }
+  //#endregion
 
 
   //#region Relationships

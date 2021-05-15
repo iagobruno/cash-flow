@@ -20,7 +20,7 @@ export default class extends BaseSchema {
 
     this.schema.alterTable('accounts_transactions', table => {
       table.string('category_id')
-        .notNullable()
+        .nullable()
         .references('id').inTable('user_categories')
         .onUpdate('CASCADE')
         .onDelete('CASCADE')

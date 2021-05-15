@@ -1,4 +1,4 @@
-import { BaseModel, beforeCreate, belongsTo, column, computed, BelongsTo } from '@ioc:Adonis/Lucid/Orm'
+import { BaseModel, beforeCreate, belongsTo, column, computed, BelongsTo, beforeSave, afterSave } from '@ioc:Adonis/Lucid/Orm'
 import { DateTime } from 'luxon'
 import { v4 as uuid } from 'uuid'
 import Account from 'App/Models/Account'
@@ -19,16 +19,16 @@ export default class Transaction extends BaseModel {
   public accountId: string
 
   @column()
-  public categoryId: string
+  public categoryId?: string
 
   @column()
-  public title: string
+  public title?: string
 
-  @column()
+  @column({ consume: Number })
   public amount: number
 
   @column()
-  public note: string
+  public note?: string
 
   @column()
   public editable: boolean
@@ -61,6 +61,12 @@ export default class Transaction extends BaseModel {
   @beforeCreate()
   public static assignUuid(transaction: Transaction) {
     transaction.id = uuid()
+  }
+
+  @afterSave()
+  public static async changeAccountBalance(transaction: Transaction) {
+    if (!transaction.account) await transaction.load('account')
+    await transaction.account.recalcBalance(transaction.$trx)
   }
   //#endregion Hooks
 }

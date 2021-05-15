@@ -20,6 +20,8 @@ Route.group(() => {
   Route.get('/me', ({ auth }) => {
     return auth.user ?? 'NULL'
   })
+
+  Route.resource('/accounts', 'AccountsController').apiOnly()
 })
   .prefix('api')
   .middleware('auth:web,api')
