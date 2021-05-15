@@ -68,5 +68,19 @@ declare module '@ioc:Adonis/Addons/Auth' {
       implementation: SessionGuardContract<'user', 'web'>,
       config: SessionGuardConfig<'user'>,
     },
+
+    /*
+    |--------------------------------------------------------------------------
+    | OAT Guard
+    |--------------------------------------------------------------------------
+    |
+    | OAT, stands for (Opaque access tokens) guard uses database backed tokens
+    | to authenticate requests.
+    |
+    */
+    api: {
+      implementation: OATGuardContract<'user', 'api'>,
+      config: OATGuardConfig<'user'>,
+    },
   }
 }
