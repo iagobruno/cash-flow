@@ -30,7 +30,7 @@ test.group('Banco de dados', () => {
       })
   })
 
-  test.skip('O banco de dados deve sempre estar no fuso horário UTC', async () => {
+  test('O banco de dados deve sempre estar no fuso horário UTC', async () => {
     await Database.rawQuery('SHOW timezone;')
       .then(result => {
         expect(result.rows[0].TimeZone).to.equal('UTC')
