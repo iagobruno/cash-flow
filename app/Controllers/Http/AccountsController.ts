@@ -17,13 +17,12 @@ export default class AccountsController {
 
       newAccount = await loggedUser.related('accounts').create(data)
 
-      newAccount.useTransaction(trx)
-
       if (initial_balance && initial_balance > 0) {
         await newAccount.related('transactions').create({
+          title: 'Saldo inicial',
           amount: initial_balance,
-          title: 'Valor inicial',
-          userId: loggedUser.id
+          userId: loggedUser.id,
+          editable: false,
         })
       }
     })

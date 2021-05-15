@@ -151,4 +151,30 @@ test.group('POST /api/accounts', (group) => {
     expect(user.balance).to.equal(23.50 + 50.00, 'Não alterou corretamente o saldo do usuário')
   })
 
+  test('Deve criar uma transferência de "Saldo inicial" quando criar uma conta com saldo inicial', async () => {
+    const apiToken = await generateAnApiToken()
+
+    const accountId = await request(BASE_URL)
+      .post(`/api/accounts`)
+      .send({
+        name: 'Conta Corrente',
+        initial_balance: 59.40,
+        icon: 'nubank',
+        color: '#000'
+      })
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.OK)
+      .then(res => res.body.id)
+
+    const account = await Account.findOrFail(accountId)
+    await account.load('transactions')
+
+    expect(account.transactions).to.not.be.undefined
+    expect(account.transactions).to.be.an('array').with.lengthOf(1)
+    expect(account.transactions[0].toObject()).to.include({
+      title: 'Saldo inicial',
+      amount: 59.40
+    })
+  })
+
 })
