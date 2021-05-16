@@ -1,5 +1,6 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import Category from 'App/Models/Category'
+import NewCategoryValidator from 'App/Validators/NewCategoryValidator'
 import UpdateCategoryValidator from 'App/Validators/UpdateCategoryValidator'
 
 export default class CategoriesController {
@@ -20,8 +21,14 @@ export default class CategoriesController {
     return category
   }
 
-  // public async store({ }: HttpContextContract) {
-  // }
+  public async store({ request, auth }: HttpContextContract) {
+    const loggedUser = auth.user!
+    const data = await request.validate(NewCategoryValidator)
+
+    const category = await loggedUser.related('categories').create(data)
+
+    return category
+  }
 
   public async update({ request, bouncer, params }: HttpContextContract) {
     const category = await Category.findOrFail(params.id)

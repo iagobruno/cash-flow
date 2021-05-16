@@ -5,6 +5,7 @@ import { BASE_URL, cleanUpDatabase, generateAnApiToken } from './_helpers'
 import { StatusCodes } from 'http-status-codes'
 import UserFactory from 'Database/factories/UserFactory'
 import CategoryFactory from 'Database/factories/CategoryFactory'
+import Category from 'App/Models/Category'
 
 test.group('GET /api/categories', (group) => {
 
@@ -131,6 +132,132 @@ test.group('GET /api/categories/:id', (group) => {
         expect(res.body).to.have.property('kind', category.kind, 'Não retornou a categoria certa')
         expect(res.body).to.have.property('icon', category.icon, 'Não retornou a categoria certa')
         expect(res.body).to.have.property('user_id', user.id, 'Retornou a categoria de outro usuário')
+      })
+  })
+})
+
+test.group('POST /api/categories', (group) => {
+
+  group.beforeEach(cleanUpDatabase)
+
+  test('Deve retornar um erro se não houver um usuário logado', async () => {
+    await request(BASE_URL)
+      .post(`/api/categories`)
+      .expect(StatusCodes.UNAUTHORIZED)
+      .expect('Content-Type', /json/)
+      .then(res => {
+        expect(res.body).to.have.property('errors')
+      })
+  })
+
+  test('Deve retornar um erro se o body não conter todos os dados obrigatórios', async () => {
+    const apiToken = await generateAnApiToken()
+
+    await request(BASE_URL)
+      .post(`/api/categories`)
+      .send({})
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.UNPROCESSABLE_ENTITY)
+      .expect('Content-Type', /json/)
+      .then(res => {
+        expect(res.body).to.have.property('errors')
+        expect(res.body.errors[0]).to.have.property('field', 'name')
+        expect(res.body.errors[0]).to.have.property('rule', 'required')
+      })
+
+    await request(BASE_URL)
+      .post(`/api/categories`)
+      .send({
+        name: 'Salário'
+      })
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.UNPROCESSABLE_ENTITY)
+      .expect('Content-Type', /json/)
+      .then(res => {
+        expect(res.body).to.have.property('errors')
+        expect(res.body.errors[0]).to.have.property('field', 'kind')
+        expect(res.body.errors[0]).to.have.property('rule', 'required')
+      })
+
+    await request(BASE_URL)
+      .post(`/api/categories`)
+      .send({
+        name: 'Salário',
+        kind: 'income'
+      })
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.UNPROCESSABLE_ENTITY)
+      .expect('Content-Type', /json/)
+      .then(res => {
+        expect(res.body).to.have.property('errors')
+        expect(res.body.errors[0]).to.have.property('field', 'icon')
+        expect(res.body.errors[0]).to.have.property('rule', 'required')
+      })
+
+    await request(BASE_URL)
+      .post(`/api/categories`)
+      .send({
+        name: 'Salário',
+        kind: 'income',
+        icon: 'nubank'
+      })
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.UNPROCESSABLE_ENTITY)
+      .expect('Content-Type', /json/)
+      .then(res => {
+        expect(res.body).to.have.property('errors')
+        expect(res.body.errors[0]).to.have.property('field', 'color')
+        expect(res.body.errors[0]).to.have.property('rule', 'required')
+      })
+  })
+
+  test('Deve atribuir corretamente ao usuário logado', async () => {
+    const user = await UserFactory.create()
+    const apiToken = await generateAnApiToken(user)
+
+    const createdCategory = await request(BASE_URL)
+      .post(`/api/categories`)
+      .send({
+        name: 'Freela',
+        kind: 'income',
+        icon: 'moto',
+        color: '#664fff'
+      })
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.OK)
+      .expect('Content-Type', /json/)
+      .then(res => res.body)
+
+    const category = await Category.findOrFail(createdCategory.id)
+
+    expect(category.toObject()).to.have.property('userId', user.id)
+  })
+
+  test('Deve conseguir criar uma categoria', async () => {
+    const apiToken = await generateAnApiToken()
+    const data = {
+      name: 'Gasolina',
+      kind: 'outgo',
+      icon: 'nubank',
+      color: '#664fff'
+    }
+
+    const createdCategory = await request(BASE_URL)
+      .post(`/api/categories`)
+      .send(data)
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.OK)
+      .expect('Content-Type', /json/)
+      .then(res => {
+        expect(res.body).to.not.have.property('errors')
+        return res.body
+      })
+
+    await Category.findOrFail(createdCategory.id)
+      .then(row => {
+        expect(row, 'Não conseguiu salvar no banco de dados').to.not.be.null
+        expect(row, 'Não conseguiu salvar no banco de dados').to.not.be.undefined
+        expect(row!.toObject()).to.include(data, 'Não conseguiu salvar os dados corretamente no banco de dados')
       })
   })
 })

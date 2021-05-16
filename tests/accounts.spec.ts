@@ -214,7 +214,9 @@ test.group('POST /api/accounts', (group) => {
       .expect('Content-Type', /json/)
       .then(res => res.body)
 
-    expect(user!.id).to.equal(createdAccount.user_id)
+    const account = await Account.findOrFail(createdAccount.id)
+
+    expect(account.toObject()).to.have.property('userId', user.id)
   })
 
   test('Deve conseguir criar uma conta', async () => {
