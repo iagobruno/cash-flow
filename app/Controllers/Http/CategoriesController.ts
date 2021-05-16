@@ -6,8 +6,7 @@ export default class CategoriesController {
   // public async index({ }: HttpContextContract) {
   // }
 
-  public async show({ params, auth, bouncer }: HttpContextContract) {
-    const loggedUser = auth.user!
+  public async show({ params, bouncer }: HttpContextContract) {
     const category = await Category.findOrFail(params.id)
 
     await bouncer.with('CategoryPolicy').authorize('view', category)
@@ -21,7 +20,14 @@ export default class CategoriesController {
   // public async update({ }: HttpContextContract) {
   // }
 
-  // public async destroy({ }: HttpContextContract) {
-  // }
+  public async destroy({ params, bouncer, response }: HttpContextContract) {
+    const category = await Category.findOrFail(params.id)
+
+    await bouncer.with('CategoryPolicy').authorize('delete', category)
+
+    await category.delete()
+
+    return response.ok('OK')
+  }
 
 }

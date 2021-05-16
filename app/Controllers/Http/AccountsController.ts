@@ -14,8 +14,7 @@ export default class AccountsController {
     return accounts
   }
 
-  public async show({ params, auth, bouncer }: HttpContextContract) {
-    const loggedUser = auth.user!
+  public async show({ params, bouncer }: HttpContextContract) {
     const account = await Account.findOrFail(params.id)
 
     await bouncer.with('AccountPolicy').authorize('view', account)
@@ -49,8 +48,7 @@ export default class AccountsController {
     return newAccount
   }
 
-  public async update({ request, auth, bouncer, params }: HttpContextContract) {
-    const loggedUser = auth.user!
+  public async update({ request, bouncer, params }: HttpContextContract) {
     const account = await Account.findOrFail(params.id)
 
     await bouncer.with('AccountPolicy').authorize('update', account)
@@ -63,8 +61,7 @@ export default class AccountsController {
     return account
   }
 
-  public async destroy({ params, auth, bouncer, response }: HttpContextContract) {
-    const loggedUser = auth.user!
+  public async destroy({ params, bouncer, response }: HttpContextContract) {
     const account = await Account.findOrFail(params.id)
 
     await bouncer.with('AccountPolicy').authorize('delete', account)

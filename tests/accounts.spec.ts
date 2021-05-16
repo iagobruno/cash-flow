@@ -471,13 +471,10 @@ test.group('DELETE /api/accounts/:id', (group) => {
 
   test('Deve conseguir deletar uma conta', async () => {
     const user = await UserFactory
-      .with('accounts', 1)
+      .with('accounts', 2)
       .create()
-    const apiToken = await generateAnApiToken(user)
-
-    await user.load('accounts')
-    const accountsListLengthBEFORE = user.accounts.length
     const accountToDelete = user.accounts[0]
+    const apiToken = await generateAnApiToken(user)
 
     await request(BASE_URL)
       .delete(`/api/accounts/${accountToDelete.id}`)
@@ -489,6 +486,7 @@ test.group('DELETE /api/accounts/:id', (group) => {
     expect(
       userAccounts,
       'Não conseguiu deletar a conta no banco de dados'
-    ).to.be.an('array').with.lengthOf(accountsListLengthBEFORE - 1)
+    ).to.be.an('array').with.lengthOf(1)
+    expect(userAccounts[0].name).to.not.equal(accountToDelete.name)
   })
 })
