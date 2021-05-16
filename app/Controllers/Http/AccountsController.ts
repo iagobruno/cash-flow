@@ -18,7 +18,7 @@ export default class AccountsController {
     const loggedUser = auth.user!
     const account = await Account.findOrFail(params.id)
 
-    await bouncer.forUser(loggedUser).authorize('view-account', account)
+    await bouncer.with('AccountPolicy').authorize('view', account)
 
     return account
   }
@@ -53,7 +53,7 @@ export default class AccountsController {
     const loggedUser = auth.user!
     const account = await Account.findOrFail(params.id)
 
-    await bouncer.forUser(loggedUser).authorize('update-account', account)
+    await bouncer.with('AccountPolicy').authorize('update', account)
 
     const data = await request.validate(UpdateAccountValidator)
 
@@ -67,7 +67,7 @@ export default class AccountsController {
     const loggedUser = auth.user!
     const account = await Account.findOrFail(params.id)
 
-    await bouncer.forUser(loggedUser).authorize('delete-account', account)
+    await bouncer.with('AccountPolicy').authorize('delete', account)
 
     await account.delete()
 

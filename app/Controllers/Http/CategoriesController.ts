@@ -10,7 +10,7 @@ export default class CategoriesController {
     const loggedUser = auth.user!
     const category = await Category.findOrFail(params.id)
 
-    await bouncer.forUser(loggedUser).authorize('view-category', category)
+    await bouncer.with('CategoryPolicy').authorize('view', category)
 
     return category
   }

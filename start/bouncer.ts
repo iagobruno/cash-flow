@@ -6,9 +6,6 @@
  */
 
 import Bouncer from '@ioc:Adonis/Addons/Bouncer'
-import type User from 'App/Models/User'
-import type Account from 'App/Models/Account'
-import type Category from 'App/Models/Category'
 
 /*
 |--------------------------------------------------------------------------
@@ -33,20 +30,6 @@ import type Category from 'App/Models/Category'
 |****************************************************************
 */
 export const { actions } = Bouncer
-  .define('view-account', (user: User, account: Account) => {
-    return account.userId === user.id
-  })
-  .define('delete-account', (user: User, account: Account) => {
-    return account.userId === user.id
-  })
-  .define('update-account', (user: User, account: Account) => {
-    return account.userId === user.id
-  })
-
-  .define('view-category', (user: User, category: Category) => {
-    return category.userId === user.id
-  })
-
 
 /*
 |--------------------------------------------------------------------------
@@ -71,4 +54,7 @@ export const { actions } = Bouncer
 | NOTE: Always export the "policies" const from this file
 |****************************************************************
 */
-export const { policies } = Bouncer.registerPolicies({})
+export const { policies } = Bouncer.registerPolicies({
+  AccountPolicy: () => import('App/Policies/AccountPolicy'),
+  CategoryPolicy: () => import('App/Policies/CategoryPolicy'),
+})
