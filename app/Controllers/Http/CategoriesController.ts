@@ -3,8 +3,13 @@ import Category from 'App/Models/Category'
 
 export default class CategoriesController {
 
-  // public async index({ }: HttpContextContract) {
-  // }
+  public async index({ auth }: HttpContextContract) {
+    const loggedUser = auth.user!
+    const categories = await loggedUser.related('categories').query()
+      .orderBy('name', 'asc')
+
+    return categories
+  }
 
   public async show({ params, bouncer }: HttpContextContract) {
     const category = await Category.findOrFail(params.id)

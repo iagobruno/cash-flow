@@ -5,6 +5,66 @@ import { BASE_URL, cleanUpDatabase, generateAnApiToken } from './_helpers'
 import { StatusCodes } from 'http-status-codes'
 import UserFactory from 'Database/factories/UserFactory'
 
+test.group('GET /api/categories', (group) => {
+
+  group.beforeEach(cleanUpDatabase)
+
+  test('Deve retornar um erro se não houver um usuário logado', async () => {
+    await request(BASE_URL)
+      .get(`/api/categories`)
+      .expect(StatusCodes.UNAUTHORIZED)
+      .expect('Content-Type', /json/)
+      .then(res => {
+        expect(res.body).to.have.property('errors')
+      })
+  })
+
+  test('Deve conseguir retornar a lista de categorias do usuário logado', async () => {
+    const user = await UserFactory
+      .with('categories', 3)
+      .create()
+    const apiToken = await generateAnApiToken(user)
+
+    const categories = await request(BASE_URL)
+      .get(`/api/categories`)
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.OK)
+      .expect('Content-Type', /json/)
+      .then(res => res.body as any[])
+
+    expect(categories).to.be.an('array').with.lengthOf(3)
+    categories.forEach(category => {
+      expect(category).to.have.property('name')
+      expect(category).to.have.property('kind')
+      expect(category).to.have.property('icon')
+    })
+  })
+
+  test('Deve retornar SOMENTE as categorias do usuário logado', async () => {
+    const user = await UserFactory
+      .with('categories', 4)
+      .create()
+    const otherUser = await UserFactory
+      .with('categories', 2)
+      .create()
+    const apiToken = await generateAnApiToken(user)
+
+    const categories = await request(BASE_URL)
+      .get(`/api/categories`)
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.OK)
+      .expect('Content-Type', /json/)
+      .then(res => res.body as any[])
+
+    expect(categories).to.be.an('array').with.lengthOf(4)
+    categories.forEach(category => {
+      expect(category).to.have.property('user_id', user.id, 'Retornou a categorias de outro usuário')
+      expect(category).to.not.have.property('user_id', otherUser.id, 'Retornou a categorias de outro usuário')
+    })
+  })
+
+})
+
 test.group('GET /api/categories/:id', (group) => {
 
   group.beforeEach(cleanUpDatabase)
