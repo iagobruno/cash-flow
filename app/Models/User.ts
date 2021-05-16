@@ -58,6 +58,54 @@ export default class User extends BaseModel {
 
     return newUserBalance
   }
+
+  public async createInitialUserData() {
+    const user = this as User
+    await user.related('accounts').create({
+      name: 'Carteira',
+      balance: 0,
+      color: 'green',
+      icon: 'wallet',
+    })
+    await user.related('categories').createMany([
+      {
+        kind: 'income',
+        name: 'Salário',
+        icon: 'money',
+        color: 'green',
+      },
+      {
+        kind: 'income',
+        name: 'Freelas',
+        icon: 'money',
+        color: 'green',
+      },
+      {
+        kind: 'outgo',
+        name: 'Supermercado',
+        icon: 'cart',
+        color: 'orange',
+      },
+      {
+        kind: 'outgo',
+        name: 'Transporte',
+        icon: 'car',
+        color: 'black',
+      },
+      {
+        kind: 'outgo',
+        name: 'Alimentação',
+        icon: 'fooad',
+        color: 'blue',
+      },
+      {
+        kind: 'outgo',
+        name: 'Casa',
+        icon: 'house',
+        color: 'yellow',
+      }
+    ])
+  }
   //#endregion
 
 
@@ -78,58 +126,5 @@ export default class User extends BaseModel {
   public static async beforeCreate(user: User) {
     user.id = uuid()
   }
-
-  @afterCreate()
-  public static async createInitialUserData(user: User) {
-    await createInitialUserData(user)
-  }
   //#endregion Hooks
-}
-
-
-async function createInitialUserData(user: User) {
-  await user.related('accounts').create({
-    name: 'Carteira',
-    balance: 0,
-    color: 'green',
-    icon: 'wallet',
-  })
-  await user.related('categories').createMany([
-    {
-      kind: 'income',
-      name: 'Salário',
-      icon: 'money',
-      color: 'green',
-    },
-    {
-      kind: 'income',
-      name: 'Freelas',
-      icon: 'money',
-      color: 'green',
-    },
-    {
-      kind: 'outgo',
-      name: 'Supermercado',
-      icon: 'cart',
-      color: 'orange',
-    },
-    {
-      kind: 'outgo',
-      name: 'Transporte',
-      icon: 'car',
-      color: 'black',
-    },
-    {
-      kind: 'outgo',
-      name: 'Alimentação',
-      icon: 'fooad',
-      color: 'blue',
-    },
-    {
-      kind: 'outgo',
-      name: 'Casa',
-      icon: 'house',
-      color: 'yellow',
-    }
-  ])
 }

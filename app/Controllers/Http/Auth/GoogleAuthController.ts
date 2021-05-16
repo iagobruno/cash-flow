@@ -28,7 +28,7 @@ export default class GoogleAuthController {
     /**
      * Find the user by email or create a new one
      */
-    const user = await User.firstOrCreate(
+    const user = await User.firstOrNew(
       {
         email: googleUser.email,
       },
@@ -39,6 +39,11 @@ export default class GoogleAuthController {
         accessToken: googleUser.token.token,
       }
     )
+
+    if (user.$isNew) {
+      await user.save()
+      await user.createInitialUserData()
+    }
 
     /**
      * Finally, login the user

@@ -23,7 +23,7 @@ test.group('GET /api/accounts', (group) => {
 
   test('Deve conseguir retornar a lista de contas do usuário logado', async () => {
     const user = await UserFactory
-      .with('accounts', 2)
+      .with('accounts', 3)
       .create()
     const apiToken = await generateAnApiToken(user)
 
@@ -44,10 +44,10 @@ test.group('GET /api/accounts', (group) => {
 
   test('Deve retornar SOMENTE as contas do usuário logado', async () => {
     const user = await UserFactory
-      .with('accounts', 3)
+      .with('accounts', 4)
       .create()
     const otherUser = await UserFactory
-      .with('accounts', 1)
+      .with('accounts', 2)
       .create()
     const apiToken = await generateAnApiToken(user)
 
@@ -171,7 +171,7 @@ test.group('POST /api/accounts', (group) => {
         return res.body
       })
 
-    await Account.find(createdAccount.id)
+    await Account.findOrFail(createdAccount.id)
       .then(row => {
         expect(row, 'Não conseguiu salvar no banco de dados').to.not.be.null
         expect(row, 'Não conseguiu salvar no banco de dados').to.not.be.undefined
