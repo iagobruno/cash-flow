@@ -22,6 +22,7 @@ Route.group(() => {
   })
 
   Route.resource('/accounts', 'AccountsController').apiOnly()
+  Route.resource('/categories', 'CategoriesController').apiOnly()
 })
   .prefix('api')
   .middleware('auth:web,api')

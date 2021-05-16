@@ -33,6 +33,7 @@
       ]
     },
     "types": [
+      "@types/node",
       "@adonisjs/core",
       "@adonisjs/repl",
       "@adonisjs/lucid",

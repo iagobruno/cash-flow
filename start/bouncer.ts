@@ -8,6 +8,7 @@
 import Bouncer from '@ioc:Adonis/Addons/Bouncer'
 import type User from 'App/Models/User'
 import type Account from 'App/Models/Account'
+import type Category from 'App/Models/Category'
 
 /*
 |--------------------------------------------------------------------------
@@ -40,6 +41,10 @@ export const { actions } = Bouncer
   })
   .define('update-account', (user: User, account: Account) => {
     return account.userId === user.id
+  })
+
+  .define('view-category', (user: User, category: Category) => {
+    return category.userId === user.id
   })
 
 

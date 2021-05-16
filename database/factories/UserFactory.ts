@@ -1,9 +1,10 @@
 import Factory from '@ioc:Adonis/Lucid/Factory'
 import User from 'App/Models/User'
-import { AccountFactory } from './AccountFactory'
-import { TransactionFactory } from './TransactionFactory'
+import AccountFactory from './AccountFactory'
+import CategoryFactory from './CategoryFactory'
+import TransactionFactory from './TransactionFactory'
 
-export const UserFactory = Factory.define(User, ({ faker }) => {
+const UserFactory = Factory.define(User, ({ faker }) => {
   return {
     email: faker.internet.email(),
     name: faker.name.findName(),
@@ -11,5 +12,8 @@ export const UserFactory = Factory.define(User, ({ faker }) => {
   }
 })
   .relation('accounts', () => AccountFactory)
+  .relation('categories', () => CategoryFactory)
   .relation('transactions', () => TransactionFactory)
   .build()
+
+export default UserFactory

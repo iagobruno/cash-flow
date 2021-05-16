@@ -4,8 +4,8 @@ import request from 'supertest'
 import { BASE_URL, cleanUpDatabase, generateAnApiToken } from './_helpers'
 import { StatusCodes } from 'http-status-codes'
 import Account from 'App/Models/Account'
-import { UserFactory } from 'Database/factories/UserFactory'
-import { AccountFactory } from 'Database/factories/AccountFactory'
+import UserFactory from 'Database/factories/UserFactory'
+import AccountFactory from 'Database/factories/AccountFactory'
 
 test.group('GET /api/accounts', (group) => {
 

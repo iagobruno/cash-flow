@@ -1,6 +1,6 @@
 import Database from '@ioc:Adonis/Lucid/Database'
-import { UserFactory } from 'Database/factories/UserFactory'
 import type User from 'App/Models/User'
+import UserFactory from 'Database/factories/UserFactory'
 import request from 'supertest'
 import { StatusCodes } from 'http-status-codes'
 import faker from 'faker'
