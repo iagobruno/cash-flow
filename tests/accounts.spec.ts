@@ -7,6 +7,66 @@ import Account from 'App/Models/Account'
 import { UserFactory } from 'Database/factories/UserFactory'
 import { AccountFactory } from 'Database/factories/AccountFactory'
 
+test.group('GET /api/accounts', (group) => {
+
+  group.beforeEach(cleanUpDatabase)
+
+  test('Deve retornar um erro se não houver um usuário logado', async () => {
+    await request(BASE_URL)
+      .get(`/api/accounts`)
+      .expect(StatusCodes.UNAUTHORIZED)
+      .expect('Content-Type', /json/)
+      .then(res => {
+        expect(res.body).to.have.property('errors')
+      })
+  })
+
+  test('Deve conseguir retornar a lista de contas do usuário logado', async () => {
+    const user = await UserFactory
+      .with('accounts', 2)
+      .create()
+    const apiToken = await generateAnApiToken(user)
+
+    const accounts = await request(BASE_URL)
+      .get(`/api/accounts`)
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.OK)
+      .expect('Content-Type', /json/)
+      .then(res => res.body as any[])
+
+    expect(accounts).to.be.an('array').with.lengthOf(3)
+    accounts.forEach(account => {
+      expect(account).to.have.property('name')
+      expect(account).to.have.property('balance')
+      expect(account).to.have.property('bank')
+    })
+  })
+
+  test('Deve retornar SOMENTE as contas do usuário logado', async () => {
+    const user = await UserFactory
+      .with('accounts', 3)
+      .create()
+    const otherUser = await UserFactory
+      .with('accounts', 1)
+      .create()
+    const apiToken = await generateAnApiToken(user)
+
+    const accounts = await request(BASE_URL)
+      .get(`/api/accounts`)
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.OK)
+      .expect('Content-Type', /json/)
+      .then(res => res.body as any[])
+
+    expect(accounts).to.be.an('array').with.lengthOf(4)
+    accounts.forEach(account => {
+      expect(account).to.have.property('user_id', user.id, 'Retornou a conta de outro usuário')
+      expect(account).to.not.have.property('user_id', otherUser.id, 'Retornou a conta de outro usuário')
+    })
+  })
+
+})
+
 test.group('POST /api/accounts', (group) => {
 
   group.beforeEach(cleanUpDatabase)

@@ -5,7 +5,13 @@ import NewAccountValidator from 'App/Validators/NewAccountValidator'
 import UpdateAccountValidator from 'App/Validators/UpdateAccountValidator'
 
 export default class AccountsController {
-  public async index({ }: HttpContextContract) {
+
+  public async index({ auth }: HttpContextContract) {
+    const loggedUser = auth.user!
+    const accounts = await loggedUser.related('accounts').query()
+      .orderBy('name', 'asc')
+
+    return accounts
   }
 
   public async store({ request, auth }: HttpContextContract) {
@@ -56,4 +62,5 @@ export default class AccountsController {
 
     return response.ok('OK')
   }
+
 }
