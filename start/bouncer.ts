@@ -32,6 +32,9 @@ import type Account from 'App/Models/Account'
 |****************************************************************
 */
 export const { actions } = Bouncer
+  .define('view-account', (user: User, account: Account) => {
+    return account.userId === user.id
+  })
   .define('delete-account', (user: User, account: Account) => {
     return account.userId === user.id
   })

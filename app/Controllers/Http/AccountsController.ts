@@ -14,6 +14,15 @@ export default class AccountsController {
     return accounts
   }
 
+  public async show({ params, auth, bouncer }: HttpContextContract) {
+    const loggedUser = auth.user!
+    const account = await Account.findOrFail(params.id)
+
+    await bouncer.forUser(loggedUser).authorize('view-account', account)
+
+    return account
+  }
+
   public async store({ request, auth }: HttpContextContract) {
     const loggedUser = auth.user!
     const { initial_balance, ...data } = await request.validate(NewAccountValidator)
@@ -25,6 +34,8 @@ export default class AccountsController {
       newAccount = await loggedUser.related('accounts').create(data)
 
       if (initial_balance && initial_balance > 0) {
+        newAccount.useTransaction(trx)
+
         await newAccount.related('transactions').create({
           title: 'Saldo inicial',
           amount: initial_balance,
