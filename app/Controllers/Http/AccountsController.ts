@@ -2,6 +2,7 @@ import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import Database from '@ioc:Adonis/Lucid/Database'
 import Account from 'App/Models/Account'
 import NewAccountValidator from 'App/Validators/NewAccountValidator'
+import UpdateAccountValidator from 'App/Validators/UpdateAccountValidator'
 
 export default class AccountsController {
   public async index({ }: HttpContextContract) {
@@ -31,7 +32,18 @@ export default class AccountsController {
     return newAccount
   }
 
-  public async update({ }: HttpContextContract) {
+  public async update({ request, auth, bouncer, params }: HttpContextContract) {
+    const loggedUser = auth.user!
+    const account = await Account.findOrFail(params.id)
+
+    await bouncer.forUser(loggedUser).authorize('update-account', account)
+
+    const data = await request.validate(UpdateAccountValidator)
+
+    account.merge(data)
+    await account.save()
+
+    return account
   }
 
   public async destroy({ params, auth, bouncer, response }: HttpContextContract) {

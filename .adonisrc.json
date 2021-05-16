@@ -16,7 +16,13 @@
   "preloads": [
     "./start/routes",
     "./start/kernel",
-    "./start/bouncer"
+    "./start/bouncer",
+    {
+      "file": "./start/validationRules",
+      "environment": [
+        "web"
+      ]
+    }
   ],
   "providers": [
     "./providers/AppProvider",

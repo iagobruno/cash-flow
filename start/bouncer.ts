@@ -35,6 +35,9 @@ export const { actions } = Bouncer
   .define('delete-account', (user: User, account: Account) => {
     return account.userId === user.id
   })
+  .define('update-account', (user: User, account: Account) => {
+    return account.userId === user.id
+  })
 
 
 /*

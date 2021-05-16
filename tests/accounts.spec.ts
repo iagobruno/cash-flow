@@ -5,6 +5,7 @@ import { BASE_URL, cleanUpDatabase, generateAnApiToken } from './_helpers'
 import { StatusCodes } from 'http-status-codes'
 import Account from 'App/Models/Account'
 import { UserFactory } from 'Database/factories/UserFactory'
+import { AccountFactory } from 'Database/factories/AccountFactory'
 
 test.group('POST /api/accounts', (group) => {
 
@@ -178,6 +179,119 @@ test.group('POST /api/accounts', (group) => {
   })
 })
 
+test.group('PATCH /api/accounts/:id', (group) => {
+
+  group.beforeEach(cleanUpDatabase)
+
+  test('Deve retornar um erro se não houver um usuário logado', async () => {
+    await request(BASE_URL)
+      .patch(`/api/accounts/1`)
+      .expect(StatusCodes.UNAUTHORIZED)
+      .expect('Content-Type', /json/)
+      .then(res => {
+        expect(res.body).to.have.property('errors')
+      })
+  })
+
+  test('Deve retornar um erro se a conta não existir', async () => {
+    const apiToken = await generateAnApiToken()
+
+    await request(BASE_URL)
+      .patch(`/api/accounts/9999`)
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.NOT_FOUND)
+  })
+
+  test('Deve retornar um erro se um usuário tentar atualizar uma conta de outro usuário', async () => {
+    const user = await UserFactory.create()
+    const otherUser = await UserFactory
+      .with('accounts', 1)
+      .create()
+    const apiToken = await generateAnApiToken(user)
+    const accountToTryUpdate = otherUser.accounts[0]
+
+    await request(BASE_URL)
+      .patch(`/api/accounts/${accountToTryUpdate.id}`)
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.FORBIDDEN)
+      .expect('Content-Type', /json/)
+      .then(res => {
+        expect(res.body).to.have.property('message')
+        expect(res.body.message).to.contain('E_AUTHORIZATION_FAILURE')
+      })
+  })
+
+  test('Deve retornar um erro se o usuário tentar mudar o campo "balance"', async () => {
+    const user = await UserFactory
+      .with('accounts', 1)
+      .create()
+    const apiToken = await generateAnApiToken(user)
+    const accountToTryUpdate = user.accounts[0]
+
+    await request(BASE_URL)
+      .patch(`/api/accounts/${accountToTryUpdate.id}`)
+      .set('Authorization', apiToken)
+      .send({
+        balance: 1000.00
+      })
+      .expect(StatusCodes.UNPROCESSABLE_ENTITY)
+      .expect('Content-Type', /json/)
+      .then(res => {
+        expect(res.body).to.have.property('errors')
+        expect(res.body.errors[0]).to.have.property('rule', 'cannotDefine')
+        expect(res.body.errors[0]).to.have.property('field', 'balance')
+      })
+  })
+
+  test('Deve retornar um erro se houver algum campo inválido no body', async () => {
+    const user = await UserFactory
+      .with('accounts', 1)
+      .create()
+    const apiToken = await generateAnApiToken(user)
+    const accountToTryUpdate = user.accounts[0]
+
+    await request(BASE_URL)
+      .patch(`/api/accounts/${accountToTryUpdate.id}`)
+      .set('Authorization', apiToken)
+      .send({
+        color: 'red'
+      })
+      .expect(StatusCodes.UNPROCESSABLE_ENTITY)
+      .expect('Content-Type', /json/)
+      .then(res => {
+        expect(res.body).to.have.property('errors')
+        expect(res.body.errors[0]).to.have.property('rule', 'regex')
+        expect(res.body.errors[0]).to.have.property('field', 'color')
+      })
+  })
+
+  test('Deve conseguir atualizar os dados de uma conta se estiver tudo ok', async () => {
+    const user = await UserFactory.create()
+    const apiToken = await generateAnApiToken(user)
+    const accountToUpdate = await AccountFactory.merge({ userId: user.id }).create()
+
+    const newData = {
+      name: 'Conta Corrente no Bradesco',
+      bank: 'Bradesco',
+      icon: 'bradesco',
+      color: '#00cae4'
+    }
+    await request(BASE_URL)
+      .patch(`/api/accounts/${accountToUpdate.id}`)
+      .send(newData)
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.OK)
+      .expect('Content-Type', /json/)
+      .then(res => {
+        expect(res.body).to.not.have.property('errors')
+      })
+
+    await accountToUpdate.refresh()
+
+    expect(accountToUpdate.toObject()).to.include(newData, 'Não conseguiu atualizar os dados corretamente no banco de dados')
+  })
+})
+
 test.group('DELETE /api/accounts/:id', (group) => {
 
   group.beforeEach(cleanUpDatabase)
@@ -207,7 +321,7 @@ test.group('DELETE /api/accounts/:id', (group) => {
       })
   })
 
-  test('Deve retornar um erro se um usuário tentar deletar a conta de outro usuário', async () => {
+  test('Deve retornar um erro se um usuário tentar deletar uma conta de outro usuário', async () => {
     const user = await UserFactory.create()
     const otherUser = await UserFactory
       .with('accounts', 2)
@@ -243,6 +357,9 @@ test.group('DELETE /api/accounts/:id', (group) => {
 
     const userAccounts = await user.related('accounts').query()
 
-    expect(userAccounts).to.be.an('array').with.lengthOf(accountsListLengthBEFORE - 1)
+    expect(
+      userAccounts,
+      'Não conseguiu deletar a conta no banco de dados'
+    ).to.be.an('array').with.lengthOf(accountsListLengthBEFORE - 1)
   })
 })
