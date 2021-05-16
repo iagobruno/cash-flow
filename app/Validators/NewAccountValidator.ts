@@ -1,5 +1,6 @@
 import { schema, rules } from '@ioc:Adonis/Core/Validator'
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
+import { HEXColorRegex } from 'App/utils'
 
 export default class NewAccountValidator {
   constructor (protected ctx: HttpContextContract) {
@@ -28,7 +29,7 @@ export default class NewAccountValidator {
     name: schema.string({ trim: true }, [
       rules.maxLength(255),
     ]),
-    initial_balance: schema.number.optional([]),
+    initial_balance: schema.number.optional(),
     bank: schema.string.optional({ trim: true }, [
       rules.minLength(1),
       rules.maxLength(25)
@@ -38,7 +39,7 @@ export default class NewAccountValidator {
       rules.maxLength(10)
     ]),
     color: schema.string({ trim: true }, [
-      rules.regex(/^\#/i),
+      rules.regex(HEXColorRegex),
       rules.minLength(1),
       rules.maxLength(10)
     ]),

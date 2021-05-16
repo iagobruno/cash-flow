@@ -78,7 +78,7 @@ test.group('POST /api/accounts', (group) => {
         name: 'Conta Corrente',
         initial_balance: 23.00,
         icon: 'nubank',
-        color: '#000'
+        color: '#664fff'
       })
       .set('Authorization', apiToken)
       .expect(StatusCodes.OK)
@@ -94,7 +94,7 @@ test.group('POST /api/accounts', (group) => {
       name: 'Conta Corrente',
       balance: 23.00,
       icon: 'nubank',
-      color: '#000'
+      color: '#664fff'
     }
 
     const createdAccount = await request(BASE_URL)
@@ -128,7 +128,7 @@ test.group('POST /api/accounts', (group) => {
         name: 'Conta Corrente',
         initial_balance: 59.40,
         icon: 'nubank',
-        color: '#000'
+        color: '#664fff'
       })
       .set('Authorization', apiToken)
       .expect(StatusCodes.OK)
@@ -155,7 +155,7 @@ test.group('POST /api/accounts', (group) => {
         name: 'Conta Corrente',
         initial_balance: 23.50,
         icon: 'nubank',
-        color: '#000'
+        color: '#664fff'
       })
       .set('Authorization', apiToken)
       .expect(StatusCodes.OK)
@@ -169,7 +169,7 @@ test.group('POST /api/accounts', (group) => {
         name: 'Conta Poupança',
         initial_balance: 50.00,
         icon: 'nubank',
-        color: '#000'
+        color: '#664fff'
       })
       .set('Authorization', apiToken)
       .expect(StatusCodes.OK)
