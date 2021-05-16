@@ -1,6 +1,6 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import Database from '@ioc:Adonis/Lucid/Database'
-import type Account from 'App/Models/Account'
+import Account from 'App/Models/Account'
 import NewAccountValidator from 'App/Validators/NewAccountValidator'
 
 export default class AccountsController {
@@ -34,6 +34,14 @@ export default class AccountsController {
   public async update({ }: HttpContextContract) {
   }
 
-  public async destroy({ }: HttpContextContract) {
+  public async destroy({ params, auth, bouncer, response }: HttpContextContract) {
+    const loggedUser = auth.user!
+    const account = await Account.findOrFail(params.id)
+
+    await bouncer.forUser(loggedUser).authorize('delete-account', account)
+
+    await account.delete()
+
+    return response.ok('OK')
   }
 }

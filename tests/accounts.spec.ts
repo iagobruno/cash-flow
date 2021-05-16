@@ -118,6 +118,32 @@ test.group('POST /api/accounts', (group) => {
       })
   })
 
+  test('Deve criar uma transferência de "Saldo inicial" quando criar uma conta com saldo inicial', async () => {
+    const apiToken = await generateAnApiToken()
+
+    const accountId = await request(BASE_URL)
+      .post(`/api/accounts`)
+      .send({
+        name: 'Conta Corrente',
+        initial_balance: 59.40,
+        icon: 'nubank',
+        color: '#000'
+      })
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.OK)
+      .then(res => res.body.id)
+
+    const account = await Account.findOrFail(accountId)
+    await account.load('transactions')
+
+    expect(account.transactions).to.not.be.undefined
+    expect(account.transactions).to.be.an('array').with.lengthOf(1)
+    expect(account.transactions[0].toObject()).to.include({
+      title: 'Saldo inicial',
+      amount: 59.40
+    })
+  })
+
   test('Deve alterar o balanço total do usuário', async () => {
     const user = await UserFactory.create()
     const apiToken = await generateAnApiToken(user)
@@ -150,31 +176,73 @@ test.group('POST /api/accounts', (group) => {
     await user.refresh()
     expect(user.balance).to.equal(23.50 + 50.00, 'Não alterou corretamente o saldo do usuário')
   })
+})
 
-  test('Deve criar uma transferência de "Saldo inicial" quando criar uma conta com saldo inicial', async () => {
-    const apiToken = await generateAnApiToken()
+test.group('DELETE /api/accounts/:id', (group) => {
 
-    const accountId = await request(BASE_URL)
-      .post(`/api/accounts`)
-      .send({
-        name: 'Conta Corrente',
-        initial_balance: 59.40,
-        icon: 'nubank',
-        color: '#000'
+  group.beforeEach(cleanUpDatabase)
+
+  test('Deve retornar um erro se não houver um usuário logado', async () => {
+    await request(BASE_URL)
+      .delete(`/api/accounts/1`)
+      .expect(StatusCodes.UNAUTHORIZED)
+      .expect('Content-Type', /json/)
+      .then(res => {
+        expect(res.body).to.have.property('errors')
       })
-      .set('Authorization', apiToken)
-      .expect(StatusCodes.OK)
-      .then(res => res.body.id)
-
-    const account = await Account.findOrFail(accountId)
-    await account.load('transactions')
-
-    expect(account.transactions).to.not.be.undefined
-    expect(account.transactions).to.be.an('array').with.lengthOf(1)
-    expect(account.transactions[0].toObject()).to.include({
-      title: 'Saldo inicial',
-      amount: 59.40
-    })
   })
 
+  test('Deve retornar um erro se a conta não existir', async () => {
+    const apiToken = await generateAnApiToken()
+
+    await request(BASE_URL)
+      .delete(`/api/accounts/9999`)
+      .send({})
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.NOT_FOUND)
+      .expect('Content-Type', /json/)
+      .then(res => {
+        expect(res.body).to.have.property('message')
+        expect(res.body.message).to.contain('E_ROW_NOT_FOUND')
+      })
+  })
+
+  test('Deve retornar um erro se um usuário tentar deletar a conta de outro usuário', async () => {
+    const user = await UserFactory.create()
+    const otherUser = await UserFactory
+      .with('accounts', 2)
+      .create()
+    const apiToken = await generateAnApiToken(user)
+    const accountToTryDelete = otherUser.accounts[0]
+
+    await request(BASE_URL)
+      .delete(`/api/accounts/${accountToTryDelete.id}`)
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.FORBIDDEN)
+      .expect('Content-Type', /json/)
+      .then(res => {
+        expect(res.body).to.have.property('message')
+        expect(res.body.message).to.contain('E_AUTHORIZATION_FAILURE')
+      })
+  })
+
+  test('Deve conseguir deletar uma conta', async () => {
+    const user = await UserFactory
+      .with('accounts', 1)
+      .create()
+    const apiToken = await generateAnApiToken(user)
+
+    await user.load('accounts')
+    const accountsListLengthBEFORE = user.accounts.length
+    const accountToDelete = user.accounts[0]
+
+    await request(BASE_URL)
+      .delete(`/api/accounts/${accountToDelete.id}`)
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.OK)
+
+    const userAccounts = await user.related('accounts').query()
+
+    expect(userAccounts).to.be.an('array').with.lengthOf(accountsListLengthBEFORE - 1)
+  })
 })
