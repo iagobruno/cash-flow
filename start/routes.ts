@@ -21,6 +21,7 @@ Route.group(() => {
     return auth.user ?? 'NULL'
   })
 
+  Route.resource('/transactions', 'TransactionsController').apiOnly()
   Route.resource('/accounts', 'AccountsController').apiOnly()
   Route.resource('/categories', 'CategoriesController').apiOnly()
 })
