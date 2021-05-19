@@ -211,6 +211,38 @@ test.group('POST /api/categories', (group) => {
       })
   })
 
+  test('Deve retornar um erro se a categoria já existir', async () => {
+    const apiToken = await generateAnApiToken()
+
+    await request(BASE_URL)
+      .post(`/api/categories`)
+      .send({
+        name: 'Contas',
+        kind: 'outgo',
+        icon: 'boleto',
+        color: '#000000'
+      })
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.OK)
+
+    await request(BASE_URL)
+      .post(`/api/categories`)
+      .send({
+        name: 'Contas',
+        kind: 'outgo',
+        icon: 'boleto',
+        color: '#000000'
+      })
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.UNPROCESSABLE_ENTITY)
+      .expect('Content-Type', /json/)
+      .then(res => {
+        expect(res.body).to.have.property('errors')
+        expect(res.body.errors[0]).to.have.property('field', 'name')
+        expect(res.body.errors[0]).to.have.property('rule', 'unique')
+      })
+  })
+
   test('Deve atribuir corretamente ao usuário logado', async () => {
     const user = await UserFactory.create()
     const apiToken = await generateAnApiToken(user)

@@ -6,6 +6,10 @@ export default class NewCategoryValidator {
   constructor (protected ctx: HttpContextContract) {
   }
 
+  public refs = schema.refs({
+    userId: this.ctx.auth.user!.id
+  })
+
   /*
    * Define schema to validate the "shape", "type", "formatting" and "integrity" of data.
    *
@@ -28,6 +32,14 @@ export default class NewCategoryValidator {
   public schema = schema.create({
     name: schema.string({ trim: true }, [
       rules.maxLength(100),
+      rules.unique({
+        table: 'user_categories',
+        column: 'name',
+        where: {
+          user_id: this.refs.userId
+        },
+        caseInsensitive: true,
+      })
     ]),
     kind: schema.enum(['income', 'outgo'] as const),
     icon: schema.string({ trim: true }, [
