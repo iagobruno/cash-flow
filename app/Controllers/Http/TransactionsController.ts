@@ -80,7 +80,14 @@ export default class TransactionsController {
   // public async update ({}: HttpContextContract) {
   // }
 
-  // public async destroy ({}: HttpContextContract) {
-  // }
+  public async destroy({ params, bouncer, response }: HttpContextContract) {
+    const transaction = await Transaction.findOrFail(params.id)
+
+    await bouncer.with('TransactionPolicy').authorize('delete', transaction)
+
+    await transaction.delete()
+
+    return response.ok('OK')
+  }
 
 }

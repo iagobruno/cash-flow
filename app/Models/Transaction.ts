@@ -1,4 +1,4 @@
-import { BaseModel, beforeCreate, belongsTo, column, computed, BelongsTo, beforeSave, afterSave } from '@ioc:Adonis/Lucid/Orm'
+import { BaseModel, beforeCreate, belongsTo, column, computed, BelongsTo, afterSave, afterDelete } from '@ioc:Adonis/Lucid/Orm'
 import { DateTime } from 'luxon'
 import { v4 as uuid } from 'uuid'
 import Account from 'App/Models/Account'
@@ -67,6 +67,12 @@ export default class Transaction extends BaseModel {
   public static async changeAccountBalance(transaction: Transaction) {
     if (!transaction.account) await transaction.load('account')
     await transaction.account.recalcBalance(transaction.$trx)
+  }
+
+  @afterDelete()
+  public static async changeAccountBalance2(transaction: Transaction) {
+    const account = await Account.findOrFail(transaction.accountId)
+    await account.recalcBalance(transaction.$trx)
   }
   //#endregion Hooks
 }

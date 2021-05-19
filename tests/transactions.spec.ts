@@ -958,3 +958,159 @@ test.group('POST /api/transactions', (group) => {
   })
 
 })
+
+test.group('DELETE /api/transactions/:id', (group) => {
+
+  group.beforeEach(cleanUpDatabase)
+
+  test('Deve retornar um erro se não houver um usuário logado', async () => {
+    await request(BASE_URL)
+      .delete(`/api/transactions/1`)
+      .expect(StatusCodes.UNAUTHORIZED)
+      .expect('Content-Type', /json/)
+      .then(res => {
+        expect(res.body).to.have.property('errors')
+      })
+  })
+
+  test('Deve retornar um erro 404 se a transação não existir', async () => {
+    const apiToken = await generateAnApiToken()
+
+    await request(BASE_URL)
+      .delete(`/api/transactions/9999`)
+      .send({})
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.NOT_FOUND)
+      .expect('Content-Type', /json/)
+      .then(res => {
+        expect(res.body).to.have.property('message')
+        expect(res.body.message).to.contain('E_ROW_NOT_FOUND')
+      })
+  })
+
+  test('Deve retornar um erro se um usuário tentar deletar uma transação de outro usuário', async () => {
+    const user = await UserFactory.create()
+    const apiToken = await generateAnApiToken(user)
+
+    const otherUser = await UserFactory
+      .with('categories', 1)
+      .with('accounts')
+      .create()
+    const transactionToTryDelete = await TransactionFactory.merge({
+      userId: otherUser.id,
+      accountId: otherUser.accounts[0].id,
+      categoryId: otherUser.categories[0].id
+    }).create()
+
+    await request(BASE_URL)
+      .delete(`/api/transactions/${transactionToTryDelete.id}`)
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.FORBIDDEN)
+      .expect('Content-Type', /json/)
+      .then(res => {
+        expect(res.body).to.have.property('message')
+        expect(res.body.message).to.contain('E_AUTHORIZATION_FAILURE')
+      })
+  })
+
+  test('Deve conseguir deletar uma transação', async () => {
+    const user = await UserFactory
+      .with('categories', 1)
+      .with('accounts', 1)
+      .create()
+    const apiToken = await generateAnApiToken(user)
+
+    const transactionToDelete = await TransactionFactory.merge({
+      userId: user.id,
+      accountId: user.accounts[0].id,
+      categoryId: user.categories[0].id
+    }).create()
+    await TransactionFactory.merge({
+      userId: user.id,
+      accountId: user.accounts[0].id,
+      categoryId: user.categories[0].id
+    }).create()
+
+    await request(BASE_URL)
+      .delete(`/api/transactions/${transactionToDelete.id}`)
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.OK)
+
+    const userTransactions = await user.related('transactions').query()
+
+    expect(
+      userTransactions,
+      'Não conseguiu deletar a transação no banco de dados'
+    ).to.be.an('array').with.lengthOf(1)
+    expect(userTransactions[0].title).to.not.equal(transactionToDelete.title)
+  })
+
+  test('Deve alterar o saldo da conta associada', async () => {
+    const user = await UserFactory
+      .with('categories', 1)
+      .with('accounts', 1)
+      .create()
+    const apiToken = await generateAnApiToken(user)
+    const category = user.categories[0]
+    const account = user.accounts[0]
+
+    const transaction1 = await TransactionFactory.merge({
+      amount: 69.99,
+      userId: user.id,
+      categoryId: category.id,
+      accountId: account.id
+    }).create()
+    const transaction2 = await TransactionFactory.merge({
+      amount: -23.50,
+      userId: user.id,
+      categoryId: category.id,
+      accountId: account.id
+    }).create()
+
+    await account.refresh()
+    expect(account.balance).to.be.closeTo(69.99 + -23.50, 0.1, 'Não alterou o saldo da conta ao CRIAR uma transação')
+
+    await request(BASE_URL)
+      .delete(`/api/transactions/${transaction2.id}`)
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.OK)
+
+    await account.refresh()
+    expect(account.balance).to.be.closeTo(69.99, 0.1, 'Não diminuiu o saldo da conta após deletar a transação')
+  })
+
+  test('Deve alterar o saldo do usuário', async () => {
+    const user = await UserFactory
+      .with('categories', 1)
+      .with('accounts', 1)
+      .create()
+    const apiToken = await generateAnApiToken(user)
+    const category = user.categories[0]
+    const account = user.accounts[0]
+
+    const transaction1 = await TransactionFactory.merge({
+      amount: 69.99,
+      userId: user.id,
+      categoryId: category.id,
+      accountId: account.id
+    }).create()
+    const transaction2 = await TransactionFactory.merge({
+      amount: -23.50,
+      userId: user.id,
+      categoryId: category.id,
+      accountId: account.id
+    }).create()
+
+    await user.refresh()
+    expect(user.balance).to.be.closeTo(69.99 + -23.50, 0.1, 'Não alterou o saldo do usuário ao CRIAR uma transação')
+
+    await request(BASE_URL)
+      .delete(`/api/transactions/${transaction2.id}`)
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.OK)
+
+    await user.refresh()
+    expect(user.balance).to.be.closeTo(69.99, 0.1, 'Não diminuiu o saldo da conta após deletar a transação')
+  })
+
+})
