@@ -6,6 +6,464 @@ import { StatusCodes } from 'http-status-codes'
 import UserFactory from 'Database/factories/UserFactory'
 import Transaction from 'App/Models/Transaction'
 import Database from '@ioc:Adonis/Lucid/Database'
+import TransactionFactory from 'Database/factories/TransactionFactory'
+import faker from 'faker'
+import { DateTime } from 'luxon'
+
+const now = DateTime.now()
+
+test.group('GET /api/transactions', (group) => {
+
+  group.beforeEach(cleanUpDatabase)
+
+  test('Deve retornar um erro se não houver um usuário logado', async () => {
+    await request(BASE_URL)
+      .get(`/api/transactions`)
+      .expect(StatusCodes.UNAUTHORIZED)
+      .expect('Content-Type', /json/)
+      .then(res => {
+        expect(res.body).to.have.property('errors')
+      })
+  })
+
+  test('Deve retornar um erro se o usuário não especificar um mês', async () => {
+    const apiToken = await generateAnApiToken()
+
+    await request(BASE_URL)
+      .get(`/api/transactions`)
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.UNPROCESSABLE_ENTITY)
+      .expect('Content-Type', /json/)
+      .then(res => {
+        expect(res.body).to.have.property('errors')
+        expect(res.body.errors[0]).to.have.property('field', 'month')
+        expect(res.body.errors[0]).to.have.property('rule', 'required')
+      })
+  })
+
+  test('Deve ser uma resposta paginada', async () => {
+    const user = await UserFactory
+      .with('accounts')
+      .with('categories')
+      .create()
+    await TransactionFactory
+      .merge({
+        userId: user.id,
+        accountId: user.accounts[0].id,
+        categoryId: user.categories[0].id,
+      })
+      .createMany(5)
+    const apiToken = await generateAnApiToken(user)
+
+    await request(BASE_URL)
+      .get(`/api/transactions`)
+      .query({
+        month: now.get('month')
+      })
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.OK)
+      .expect('Content-Type', /json/)
+      .then(res => {
+        expect(res.body).to.not.have.property('errors')
+        expect(res.body).to.have.property('meta')
+        expect(res.body.meta).to.have.property('total')
+        expect(res.body.meta).to.have.property('current_page')
+        expect(res.body).to.have.property('data')
+        expect(res.body.data).to.be.an('array')
+      })
+  })
+
+  test('Deve retornar a lista de transações do usuário', async () => {
+    const user = await UserFactory
+      .with('accounts')
+      .with('categories')
+      .create()
+    await TransactionFactory
+      .merge({
+        userId: user.id,
+        accountId: user.accounts[0].id,
+        categoryId: user.categories[0].id,
+      })
+      .createMany(5)
+    const apiToken = await generateAnApiToken(user)
+
+    await request(BASE_URL)
+      .get(`/api/transactions`)
+      .query({
+        month: now.get('month')
+      })
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.OK)
+      .expect('Content-Type', /json/)
+      .then(res => {
+        expect(res.body).to.not.have.property('errors')
+        expect(res.body.data).to.be.an('array').with.lengthOf(5)
+        res.body.data.forEach(transaction => {
+          expect(transaction).to.have.property('amount')
+          expect(transaction).to.have.property('title')
+          expect(transaction).to.have.property('kind')
+        })
+      })
+  })
+
+  test('Deve retornar SOMENTE as transações do usuário logado', async () => {
+    const user = await UserFactory
+      .with('accounts', 1, (a) => a.merge({ balance: 0 }))
+      .with('categories')
+      .create()
+    await TransactionFactory
+      .merge({
+        userId: user.id,
+        accountId: user.accounts[0].id,
+        categoryId: user.categories[0].id,
+      })
+      .createMany(10)
+    const apiToken = await generateAnApiToken(user)
+
+    const otherUser = await UserFactory
+      .with('accounts')
+      .with('categories')
+      .create()
+    await TransactionFactory
+      .merge({
+        userId: otherUser.id,
+        accountId: otherUser.accounts[0].id,
+        categoryId: otherUser.categories[0].id,
+      })
+      .createMany(6)
+
+    const transactions = await request(BASE_URL)
+      .get(`/api/transactions`)
+      .query({
+        month: now.get('month')
+      })
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.OK)
+      .expect('Content-Type', /json/)
+      .then(res => res.body.data as unknown[])
+
+    expect(transactions).to.be.an('array').with.lengthOf(10, 'Retornou transações de outro usuário')
+
+    transactions.forEach(transaction => {
+      expect(transaction).to.have.property('user_id', user.id, 'Retornou a transação de outro usuário')
+      expect(transaction).to.not.have.property('user_id', otherUser.id, 'Retornou a transação de outro usuário')
+    })
+  })
+
+  test('Deve retornar um erro se o usuário tentar buscar mais transações do que o permitido', async () => {
+    const apiToken = await generateAnApiToken()
+
+    await request(BASE_URL)
+      .get(`/api/transactions`)
+      .query({
+        per_page: 100,
+        month: now.get('month')
+      })
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.UNPROCESSABLE_ENTITY)
+      .expect('Content-Type', /json/)
+      .then(res => {
+        expect(res.body).to.have.property('errors')
+        expect(res.body.errors[0]).to.have.property('field', 'per_page')
+        expect(res.body.errors[0]).to.have.property('rule', 'range')
+      })
+  })
+
+  test('Deve conseguir filtrar transações por despesas ou receitas', async () => {
+    const user = await UserFactory
+      .with('accounts', 1)
+      .with('categories', 1)
+      .create()
+    await TransactionFactory.merge({
+      amount: faker.datatype.number({ min: 1, max: 100 }),
+      userId: user.id,
+      accountId: user.accounts[0].id,
+      categoryId: user.categories[0].id,
+    }).createMany(4)
+    await TransactionFactory.merge({
+      amount: faker.datatype.number({ min: 1, max: -100 }),
+      userId: user.id,
+      accountId: user.accounts[0].id,
+      categoryId: user.categories[0].id,
+    }).createMany(6)
+    const apiToken = await generateAnApiToken(user)
+
+    await request(BASE_URL)
+      .get(`/api/transactions`)
+      .query({
+        kind: 'income',
+        month: now.get('month')
+      })
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.OK)
+      .expect('Content-Type', /json/)
+      .then(res => {
+        expect(res.body.data).to.be.an('array').with.lengthOf(4, 'Retornou transações a mais')
+        res.body.data.forEach(transaction => {
+          expect(transaction.amount).to.be.greaterThan(0)
+        })
+      })
+
+    await request(BASE_URL)
+      .get(`/api/transactions`)
+      .query({
+        kind: 'outgo',
+        month: now.get('month')
+      })
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.OK)
+      .expect('Content-Type', /json/)
+      .then(res => {
+        expect(res.body.data).to.be.an('array').with.lengthOf(6, 'Retornou transações a mais')
+        res.body.data.forEach(transaction => {
+          expect(transaction.amount).to.be.lessThan(0)
+        })
+      })
+  })
+
+  test('Deve conseguir filtrar transações por categoria', async () => {
+    const user = await UserFactory
+      .with('accounts', 1)
+      .with('categories', 2)
+      .create()
+    const [category1, category2] = user.categories
+    await TransactionFactory.merge({
+      userId: user.id,
+      accountId: user.accounts[0].id,
+      categoryId: category1.id,
+    }).createMany(3)
+    await TransactionFactory.merge({
+      userId: user.id,
+      accountId: user.accounts[0].id,
+      categoryId: category2.id,
+    }).createMany(2)
+    const apiToken = await generateAnApiToken(user)
+
+    await request(BASE_URL)
+      .get(`/api/transactions`)
+      .query({
+        category: category1.id,
+        month: now.get('month')
+      })
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.OK)
+      .expect('Content-Type', /json/)
+      .then(res => {
+        expect(res.body.data).to.be.an('array').with.lengthOf(3, 'Retornou transações a mais')
+        res.body.data.forEach(transaction => {
+          expect(transaction).to.have.property('category_id', category1.id, 'Retornou transações de outra categoria')
+          expect(transaction).to.not.have.property('category_id', category2.id, 'Retornou transações de outra categoria')
+        })
+      })
+  })
+
+  test('Deve retornar um erro se tentar filtrar usando uma categoria que não existe', async () => {
+    const apiToken = await generateAnApiToken()
+
+    await request(BASE_URL)
+      .get(`/api/transactions`)
+      .query({
+        category: 'FAKE-CAT-ID',
+        month: now.get('month')
+      })
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.UNPROCESSABLE_ENTITY)
+      .expect('Content-Type', /json/)
+      .then(res => {
+        expect(res.body).to.have.property('errors')
+        expect(res.body.errors[0]).to.have.property('field', 'category')
+        expect(res.body.errors[0]).to.have.property('rule', 'exists')
+      })
+  })
+
+  test('Deve conseguir filtrar transações por conta', async () => {
+    const user = await UserFactory
+      .with('accounts', 2)
+      .with('categories', 1)
+      .create()
+    const [account1, account2] = user.accounts
+    await TransactionFactory.merge({
+      userId: user.id,
+      accountId: account1.id,
+      categoryId: user.categories[0].id,
+    }).createMany(3)
+    await TransactionFactory.merge({
+      userId: user.id,
+      accountId: account2.id,
+      categoryId: user.categories[0].id,
+    }).createMany(2)
+    const apiToken = await generateAnApiToken(user)
+
+    await request(BASE_URL)
+      .get(`/api/transactions`)
+      .query({
+        account: account1.id,
+        month: now.get('month')
+      })
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.OK)
+      .expect('Content-Type', /json/)
+      .then(res => {
+        expect(res.body.data).to.be.an('array').with.lengthOf(3, 'Retornou transações a mais')
+        res.body.data.forEach(transaction => {
+          expect(transaction).to.have.property('account_id', account1.id, 'Retornou transações de outra conta')
+          expect(transaction).to.not.have.property('account_id', account2.id, 'Retornou transações de outra conta')
+        })
+      })
+  })
+
+  test('Deve retornar um erro se tentar filtrar usando uma conta que não existe', async () => {
+    const apiToken = await generateAnApiToken()
+
+    await request(BASE_URL)
+      .get(`/api/transactions`)
+      .query({
+        account: 'FAKE-ACC-ID',
+        month: now.get('month')
+      })
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.UNPROCESSABLE_ENTITY)
+      .expect('Content-Type', /json/)
+      .then(res => {
+        expect(res.body).to.have.property('errors')
+        expect(res.body.errors[0]).to.have.property('field', 'account')
+        expect(res.body.errors[0]).to.have.property('rule', 'exists')
+      })
+  })
+
+  test('Deve conseguir filtrar transações por mês', async () => {
+    const user = await UserFactory
+      .with('accounts', 2)
+      .with('categories', 1)
+      .create()
+
+    await TransactionFactory.merge({
+      userId: user.id,
+      accountId: user.accounts[0].id,
+      categoryId: user.categories[0].id,
+      createdAt: DateTime.now().set({ month: 4 })
+    }).createMany(3)
+    await TransactionFactory.merge({
+      userId: user.id,
+      accountId: user.accounts[0].id,
+      categoryId: user.categories[0].id,
+      createdAt: DateTime.now().set({ month: 5 })
+    }).createMany(2)
+    await TransactionFactory.merge({
+      userId: user.id,
+      accountId: user.accounts[0].id,
+      categoryId: user.categories[0].id,
+      createdAt: DateTime.now().set({ month: 6 })
+    }).createMany(4)
+
+    const apiToken = await generateAnApiToken(user)
+
+    await request(BASE_URL)
+      .get(`/api/transactions`)
+      .query({
+        month: 4
+      })
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.OK)
+      .expect('Content-Type', /json/)
+      .then(res => {
+        expect(res.body.data).to.be.an('array').with.lengthOf(3, 'Retornou transações a mais')
+        res.body.data.forEach(transaction => {
+          const month = DateTime.fromISO(transaction.created_at).get('month')
+          expect(month).to.equal(4, 'Retornou uma transação de outro mês')
+        })
+      })
+
+    await request(BASE_URL)
+      .get(`/api/transactions`)
+      .query({
+        month: 5
+      })
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.OK)
+      .expect('Content-Type', /json/)
+      .then(res => {
+        expect(res.body.data).to.be.an('array').with.lengthOf(2, 'Retornou transações a mais')
+        res.body.data.forEach(transaction => {
+          const month = DateTime.fromISO(transaction.created_at).get('month')
+          expect(month).to.equal(5, 'Retornou uma transação de outro mês')
+        })
+      })
+
+    await request(BASE_URL)
+      .get(`/api/transactions`)
+      .query({
+        month: 6
+      })
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.OK)
+      .expect('Content-Type', /json/)
+      .then(res => {
+        expect(res.body.data).to.be.an('array').with.lengthOf(4, 'Retornou transações a mais')
+        res.body.data.forEach(transaction => {
+          const month = DateTime.fromISO(transaction.created_at).get('month')
+          expect(month).to.equal(6, 'Retornou uma transação de outro mês')
+        })
+      })
+  })
+
+  test('Deve conseguir filtrar transações de um dia específico', async () => {
+    const user = await UserFactory
+      .with('accounts', 2)
+      .with('categories', 1)
+      .create()
+
+    await TransactionFactory.merge({
+      userId: user.id,
+      accountId: user.accounts[0].id,
+      categoryId: user.categories[0].id,
+      createdAt: DateTime.now().set({ month: 4, day: 21 })
+    }).createMany(3)
+    await TransactionFactory.merge({
+      userId: user.id,
+      accountId: user.accounts[0].id,
+      categoryId: user.categories[0].id,
+      createdAt: DateTime.now().set({ month: 4, day: 15 })
+    }).createMany(5)
+
+    const apiToken = await generateAnApiToken(user)
+
+    await request(BASE_URL)
+      .get(`/api/transactions`)
+      .query({
+        month: 4,
+        day: 15
+      })
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.OK)
+      .expect('Content-Type', /json/)
+      .then(res => {
+        expect(res.body.data).to.be.an('array').with.lengthOf(5, 'Retornou transações a mais')
+        res.body.data.forEach(transaction => {
+          const day = DateTime.fromISO(transaction.created_at).get('day')
+          expect(day).to.equal(15, 'Retornou uma transação de outro dia')
+        })
+      })
+
+    await request(BASE_URL)
+      .get(`/api/transactions`)
+      .query({
+        month: 4,
+        day: 21
+      })
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.OK)
+      .expect('Content-Type', /json/)
+      .then(res => {
+        expect(res.body.data).to.be.an('array').with.lengthOf(3, 'Retornou transações a mais')
+        res.body.data.forEach(transaction => {
+          const day = DateTime.fromISO(transaction.created_at).get('day')
+          expect(day).to.equal(21, 'Retornou uma transação de outro dia')
+        })
+      })
+  })
+
+})
 
 test.group('POST /api/transactions', (group) => {
 
