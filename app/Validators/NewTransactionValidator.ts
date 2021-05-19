@@ -29,7 +29,9 @@ export default class NewTransactionValidator {
       rules.minLength(1),
       rules.maxLength(255)
     ]),
-    amount: schema.number(),
+    amount: schema.number([
+      rules.notIn([0])
+    ]),
     editable: schema.boolean.optional(),
     note: schema.string.optional({}, [
       rules.maxLength(255)

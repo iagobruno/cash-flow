@@ -88,6 +88,33 @@ test.group('POST /api/transactions', (group) => {
       })
   })
 
+  test('Deve retornar um erro se o valor da transação for 0', async () => {
+    const user = await UserFactory
+      .with('accounts', 1)
+      .with('categories', 1)
+      .create()
+    const apiToken = await generateAnApiToken(user)
+    const fakeCategory = user.categories[0]
+    const fakeAccount = user.accounts[0]
+
+    await request(BASE_URL)
+      .post(`/api/transactions`)
+      .send({
+        title: 'Bolsa',
+        amount: 0,
+        account_id: fakeAccount.id,
+        category_id: fakeCategory.id,
+      })
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.UNPROCESSABLE_ENTITY)
+      .expect('Content-Type', /json/)
+      .then(res => {
+        expect(res.body).to.have.property('errors')
+        expect(res.body.errors[0]).to.have.property('field', 'amount')
+        expect(res.body.errors[0]).to.have.property('rule', 'notIn')
+      })
+  })
+
   test('Deve retornar um erro se o usuário tentar definir o campo "kind"', async () => {
     const user = await UserFactory
       .with('accounts', 1)
