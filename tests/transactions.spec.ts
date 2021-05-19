@@ -463,6 +463,60 @@ test.group('GET /api/transactions', (group) => {
       })
   })
 
+  test('A lista deve está ordenada por mais recentes primeiro', async () => {
+    const user = await UserFactory
+      .with('accounts', 2)
+      .with('categories', 1)
+      .create()
+
+    await TransactionFactory.merge({
+      userId: user.id,
+      accountId: user.accounts[0].id,
+      categoryId: user.categories[0].id,
+      createdAt: DateTime.now().set({ month: 8, day: 6 })
+    }).create()
+    await TransactionFactory.merge({
+      userId: user.id,
+      accountId: user.accounts[0].id,
+      categoryId: user.categories[0].id,
+      createdAt: DateTime.now().set({ month: 8, day: 10 })
+    }).create()
+    await TransactionFactory.merge({
+      userId: user.id,
+      accountId: user.accounts[0].id,
+      categoryId: user.categories[0].id,
+      createdAt: DateTime.now().set({ month: 8, day: 15 })
+    }).create()
+
+    const apiToken = await generateAnApiToken(user)
+
+    const list = await request(BASE_URL)
+      .get(`/api/transactions`)
+      .query({
+        month: 8,
+      })
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.OK)
+      .expect('Content-Type', /json/)
+      .then(res => res.body.data)
+
+    for (let index = 0; index < list.length; index++) {
+      const currentItem = list[index]
+      const lastItem = list[index - 1]
+      if (!lastItem) continue
+
+      const currentDate = DateTime.fromISO(currentItem.created_at)
+      const lastDate = DateTime.fromISO(lastItem.created_at)
+      const isMoreRecentThanPrevious = currentDate.diff(lastDate, 'milliseconds')
+        .toObject().milliseconds! <= 0
+
+      expect(
+        isMoreRecentThanPrevious,
+        'A lista não está ordenada corretamente'
+      ).to.be.true
+    }
+  })
+
 })
 
 test.group('POST /api/transactions', (group) => {
