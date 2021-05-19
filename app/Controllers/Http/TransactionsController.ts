@@ -1,4 +1,5 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
+import Transaction from 'App/Models/Transaction'
 import NewTransactionValidator from 'App/Validators/NewTransactionValidator'
 import TransactionsFiltersValidator from 'App/Validators/TransactionsFiltersValidator'
 import { DateTime } from 'luxon'
@@ -50,6 +51,14 @@ export default class TransactionsController {
     return transactions
   }
 
+  public async show({ params, bouncer }: HttpContextContract) {
+    const transaction = await Transaction.findOrFail(params.id)
+
+    await bouncer.with('TransactionPolicy').authorize('view', transaction)
+
+    return transaction
+  }
+
   public async store({ request, auth }: HttpContextContract) {
     const loggedUser = auth.user!
     const {
@@ -67,9 +76,6 @@ export default class TransactionsController {
 
     return transaction
   }
-
-  // public async show ({}: HttpContextContract) {
-  // }
 
   // public async update ({}: HttpContextContract) {
   // }
