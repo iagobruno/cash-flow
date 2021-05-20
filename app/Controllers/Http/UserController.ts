@@ -9,7 +9,12 @@ export default class UserController {
   // public async update({ }: HttpContextContract) {
   // }
 
-  // public async destroy({ }: HttpContextContract) {
-  // }
+  public async destroy({ auth, response }: HttpContextContract) {
+    const loggedUser = auth.user!
+
+    await loggedUser.delete()
+
+    return response.ok('OK')
+  }
 
 }
