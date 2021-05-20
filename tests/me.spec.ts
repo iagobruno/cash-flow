@@ -40,6 +40,117 @@ test.group('GET /api/me', (group) => {
 
 })
 
+test.group('PATCH /api/me', (group) => {
+
+  group.beforeEach(cleanUpDatabase)
+
+  test('Deve retornar um erro se não houver um usuário logado', async () => {
+    await request(BASE_URL)
+      .patch(`/api/me`)
+      .expect(StatusCodes.UNAUTHORIZED)
+      .expect('Content-Type', /json/)
+      .then(res => {
+        expect(res.body).to.have.property('errors')
+      })
+  })
+
+  test('Deve retornar um erro se tentar alterar o campo "balance"', async () => {
+    const user = await UserFactory.create()
+    const apiToken = await generateAnApiToken(user)
+
+    await request(BASE_URL)
+      .patch(`/api/me`)
+      .send({
+        balance: 1_000_000.00
+      })
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.UNPROCESSABLE_ENTITY)
+      .expect('Content-Type', /json/)
+      .then(res => {
+        expect(res.body).to.have.property('errors')
+        expect(res.body.errors[0]).to.have.property('field', 'balance')
+        expect(res.body.errors[0]).to.have.property('rule', 'cannotDefine')
+      })
+  })
+
+  test('Deve retornar um erro se tentar alterar o campo "email" com outro tipo de valor', async () => {
+    const user = await UserFactory.create()
+    const apiToken = await generateAnApiToken(user)
+
+    await request(BASE_URL)
+      .patch(`/api/me`)
+      .send({
+        email: 'http://google.com'
+      })
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.UNPROCESSABLE_ENTITY)
+      .expect('Content-Type', /json/)
+      .then(res => {
+        expect(res.body).to.have.property('errors')
+        expect(res.body.errors[0]).to.have.property('field', 'email')
+        expect(res.body.errors[0]).to.have.property('rule', 'email')
+      })
+
+    await request(BASE_URL)
+      .patch(`/api/me`)
+      .send({
+        email: 'lorem ipsum dolor'
+      })
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.UNPROCESSABLE_ENTITY)
+      .expect('Content-Type', /json/)
+      .then(res => {
+        expect(res.body).to.have.property('errors')
+        expect(res.body.errors[0]).to.have.property('field', 'email')
+        expect(res.body.errors[0]).to.have.property('rule', 'email')
+      })
+  })
+
+  test('Deve retornar um erro se tentar alterar o campo "photo_url" com outro tipo de valor', async () => {
+    const user = await UserFactory.create()
+    const apiToken = await generateAnApiToken(user)
+
+    await request(BASE_URL)
+      .patch(`/api/me`)
+      .send({
+        photo_url: 'lorem ipsum dolor'
+      })
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.UNPROCESSABLE_ENTITY)
+      .expect('Content-Type', /json/)
+      .then(res => {
+        expect(res.body).to.have.property('errors')
+        expect(res.body.errors[0]).to.have.property('field', 'photo_url')
+        expect(res.body.errors[0]).to.have.property('rule', 'url')
+      })
+  })
+
+  test('Deve conseguir atualizar as informações o usuário logado', async () => {
+    const user = await UserFactory.create()
+    const apiToken = await generateAnApiToken(user)
+
+    const newData = {
+      name: 'New Name',
+      email: 'new-email@gmail.com',
+      photo_url: 'https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png'
+    }
+    await request(BASE_URL)
+      .patch(`/api/me`)
+      .send(newData)
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.OK)
+      .expect('Content-Type', /json/)
+      .then(res => {
+        expect(res.body).to.not.have.property('errors')
+      })
+
+    await user.refresh()
+    expect(user.name).to.equal(newData.name, 'Não conseguiu atualizar no banco de dados')
+    expect(user.email).to.equal(newData.email, 'Não conseguiu atualizar no banco de dados')
+    expect(user.photoUrl).to.equal(newData.photo_url, 'Não conseguiu atualizar no banco de dados')
+  })
+
+})
 
 test.group('DELETE /api/me', (group) => {
 

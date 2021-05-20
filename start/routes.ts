@@ -18,6 +18,7 @@ Route.get('/auth/logout', 'Auth/GoogleAuthController.logout')
 
 Route.group(() => {
   Route.get('/me', 'UserController.index')
+  Route.patch('/me', 'UserController.update')
   Route.delete('/me', 'UserController.destroy')
 
   Route.get('/dashboard', 'DashboardController.index')
