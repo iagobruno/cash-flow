@@ -17,9 +17,7 @@ Route.get('/auth/google/callback', 'Auth/GoogleAuthController.callback')
 Route.get('/auth/logout', 'Auth/GoogleAuthController.logout')
 
 Route.group(() => {
-  Route.get('/me', ({ auth }) => {
-    return auth.user ?? 'NULL'
-  })
+  Route.get('/me', 'UserController.index')
 
   Route.get('/dashboard', 'DashboardController.index')
   Route.resource('/transactions', 'TransactionsController').apiOnly()
