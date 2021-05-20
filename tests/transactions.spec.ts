@@ -407,62 +407,6 @@ test.group('GET /api/transactions', (group) => {
       })
   })
 
-  test('Deve conseguir filtrar transações de um dia específico', async () => {
-    const user = await UserFactory
-      .with('accounts', 2)
-      .with('categories', 1)
-      .create()
-
-    await TransactionFactory.merge({
-      userId: user.id,
-      accountId: user.accounts[0].id,
-      categoryId: user.categories[0].id,
-      createdAt: DateTime.now().set({ month: 4, day: 21 })
-    }).createMany(3)
-    await TransactionFactory.merge({
-      userId: user.id,
-      accountId: user.accounts[0].id,
-      categoryId: user.categories[0].id,
-      createdAt: DateTime.now().set({ month: 4, day: 15 })
-    }).createMany(5)
-
-    const apiToken = await generateAnApiToken(user)
-
-    await request(BASE_URL)
-      .get(`/api/transactions`)
-      .query({
-        month: 4,
-        day: 15
-      })
-      .set('Authorization', apiToken)
-      .expect(StatusCodes.OK)
-      .expect('Content-Type', /json/)
-      .then(res => {
-        expect(res.body.data).to.be.an('array').with.lengthOf(5, 'Retornou transações a mais')
-        res.body.data.forEach(transaction => {
-          const day = DateTime.fromISO(transaction.created_at).get('day')
-          expect(day).to.equal(15, 'Retornou uma transação de outro dia')
-        })
-      })
-
-    await request(BASE_URL)
-      .get(`/api/transactions`)
-      .query({
-        month: 4,
-        day: 21
-      })
-      .set('Authorization', apiToken)
-      .expect(StatusCodes.OK)
-      .expect('Content-Type', /json/)
-      .then(res => {
-        expect(res.body.data).to.be.an('array').with.lengthOf(3, 'Retornou transações a mais')
-        res.body.data.forEach(transaction => {
-          const day = DateTime.fromISO(transaction.created_at).get('day')
-          expect(day).to.equal(21, 'Retornou uma transação de outro dia')
-        })
-      })
-  })
-
   test('A lista deve está ordenada por mais recentes primeiro', async () => {
     const user = await UserFactory
       .with('accounts', 2)

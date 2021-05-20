@@ -1,7 +1,7 @@
 import { rules, schema } from '@ioc:Adonis/Core/Validator'
 // import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 
-class TransactionsFiltersValidator {
+export default class TransactionsFiltersValidator {
   /*
    * Define schema to validate the "shape", "type", "formatting" and "integrity" of data.
    *
@@ -41,9 +41,6 @@ class TransactionsFiltersValidator {
     ]),
     year: schema.number.optional([
       rules.unsigned()
-    ]),
-    day: schema.number.optional([
-      rules.range(1, 31)
     ])
   })
 
@@ -60,5 +57,3 @@ class TransactionsFiltersValidator {
    */
   public messages = {}
 }
-
-export default new TransactionsFiltersValidator()

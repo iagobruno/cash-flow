@@ -17,17 +17,12 @@ export default class TransactionsController {
       account,
       month,
       year = DateTime.now().get('year'),
-      day,
     } = await request.validate(TransactionsFiltersValidator)
 
     const query = loggedUser.related('transactions').query()
       .whereRaw('EXTRACT(MONTH FROM created_at) = ?', [month])
       .andWhereRaw('EXTRACT(YEAR FROM created_at) = ?', [year])
       .orderBy('created_at', 'desc')
-
-    if (day) {
-      query.andWhereRaw('EXTRACT(DAY FROM created_at) = ?', [day])
-    }
 
     if (kind) {
       if (kind === 'income') {
