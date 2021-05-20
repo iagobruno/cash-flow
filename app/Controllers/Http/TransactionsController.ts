@@ -2,6 +2,7 @@ import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import Transaction from 'App/Models/Transaction'
 import NewTransactionValidator from 'App/Validators/NewTransactionValidator'
 import TransactionsFiltersValidator from 'App/Validators/TransactionsFiltersValidator'
+import UpdateTransactionValidator from 'App/Validators/UpdateTransactionValidator'
 import { DateTime } from 'luxon'
 
 export default class TransactionsController {
@@ -77,8 +78,17 @@ export default class TransactionsController {
     return transaction
   }
 
-  // public async update ({}: HttpContextContract) {
-  // }
+  public async update({ request, params, bouncer }: HttpContextContract) {
+    const { kind, ...data } = await request.validate(UpdateTransactionValidator)
+    const transaction = await Transaction.findOrFail(params.id)
+
+    await bouncer.with('TransactionPolicy').authorize('update', transaction)
+
+    transaction.merge(data)
+    await transaction.save()
+
+    return transaction
+  }
 
   public async destroy({ params, bouncer, response }: HttpContextContract) {
     const transaction = await Transaction.findOrFail(params.id)

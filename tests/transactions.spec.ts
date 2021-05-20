@@ -959,6 +959,175 @@ test.group('POST /api/transactions', (group) => {
 
 })
 
+test.group('PATCH /api/transactions/:id', (group) => {
+
+  group.beforeEach(cleanUpDatabase)
+
+  test('Deve retornar um erro se não houver um usuário logado', async () => {
+    await request(BASE_URL)
+      .patch(`/api/transactions/1`)
+      .expect(StatusCodes.UNAUTHORIZED)
+      .expect('Content-Type', /json/)
+      .then(res => {
+        expect(res.body).to.have.property('errors')
+      })
+  })
+
+  test('Deve retornar um erro 404 se a transação não existir', async () => {
+    const apiToken = await generateAnApiToken()
+
+    await request(BASE_URL)
+      .patch(`/api/transactions/9999`)
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.NOT_FOUND)
+  })
+
+  test('Deve retornar um erro se um usuário tentar atualizar uma transação de outro usuário', async () => {
+    const user = await UserFactory.create()
+    const apiToken = await generateAnApiToken(user)
+
+    const otherUser = await UserFactory
+      .with('categories', 1)
+      .with('accounts', 1)
+      .create()
+    const transactionToTryUpdate = await TransactionFactory.merge({
+      userId: otherUser.id,
+      categoryId: otherUser.categories[0].id,
+      accountId: otherUser.accounts[0].id
+    }).create()
+
+    await request(BASE_URL)
+      .patch(`/api/transactions/${transactionToTryUpdate.id}`)
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.FORBIDDEN)
+      .expect('Content-Type', /json/)
+      .then(res => {
+        expect(res.body).to.have.property('message')
+        expect(res.body.message).to.contain('E_AUTHORIZATION_FAILURE')
+      })
+  })
+
+  test('Deve retornar um erro se o usuário tentar atualizar o campo "kind"', async () => {
+    const user = await UserFactory
+      .with('categories', 1)
+      .with('accounts', 1)
+      .create()
+    const apiToken = await generateAnApiToken(user)
+
+    const transactionToTryUpdate = await TransactionFactory.merge({
+      userId: user.id,
+      categoryId: user.categories[0].id,
+      accountId: user.accounts[0].id
+    }).create()
+
+    await request(BASE_URL)
+      .patch(`/api/transactions/${transactionToTryUpdate.id}`)
+      .send({
+        kind: 'outgo'
+      })
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.UNPROCESSABLE_ENTITY)
+      .expect('Content-Type', /json/)
+      .then(res => {
+        expect(res.body).to.have.property('errors')
+        expect(res.body.errors[0]).to.have.property('rule', 'cannotDefine')
+        expect(res.body.errors[0]).to.have.property('field', 'kind')
+      })
+  })
+
+  // test('Deve retornar um erro se houver algum campo inválido no body', async () => {
+  //   const user = await UserFactory
+  //     .with('categories', 1)
+  //     .with('accounts', 1)
+  //     .create()
+  //   const apiToken = await generateAnApiToken(user)
+
+  //   const transactionToTryUpdate = await TransactionFactory.merge({
+  //     userId: user.id,
+  //     categoryId: user.categories[0].id,
+  //     accountId: user.accounts[0].id
+  //   }).create()
+
+  //   await request(BASE_URL)
+  //     .patch(`/api/transactions/${transactionToTryUpdate.id}`)
+  //     .set('Authorization', apiToken)
+  //     .send({
+  //       color: 'red'
+  //     })
+  //     .expect(StatusCodes.UNPROCESSABLE_ENTITY)
+  //     .expect('Content-Type', /json/)
+  //     .then(res => {
+  //       expect(res.body).to.have.property('errors')
+  //       expect(res.body.errors[0]).to.have.property('rule', 'regex')
+  //       expect(res.body.errors[0]).to.have.property('field', 'color')
+  //     })
+  // })
+
+  test('Deve retornar um erro se o usuário tentar editar uma transação que nãao pode ser editada', async () => {
+    const user = await UserFactory
+      .with('categories', 1)
+      .with('accounts', 1)
+      .create()
+    const apiToken = await generateAnApiToken(user)
+
+    const transactionToUpdate = await TransactionFactory.merge({
+      editable: false,
+      userId: user.id,
+      categoryId: user.categories[0].id,
+      accountId: user.accounts[0].id
+    }).create()
+
+    await request(BASE_URL)
+      .patch(`/api/transactions/${transactionToUpdate.id}`)
+      .send({
+        amount: 278.00
+      })
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.FORBIDDEN)
+      .expect('Content-Type', /json/)
+      .then(res => {
+        expect(res.body).to.not.have.property('errors')
+      })
+
+    await transactionToUpdate.refresh()
+    expect(transactionToUpdate.amount).to.not.equal(278.00)
+  })
+
+  test('Deve conseguir atualizar os dados de uma categoria se estiver tudo ok', async () => {
+    const user = await UserFactory
+      .with('categories', 1)
+      .with('accounts', 1)
+      .create()
+    const apiToken = await generateAnApiToken(user)
+
+    const transactionToUpdate = await TransactionFactory.merge({
+      userId: user.id,
+      categoryId: user.categories[0].id,
+      accountId: user.accounts[0].id
+    }).create()
+
+    const newData = {
+      title: 'Pagamento do freela',
+      amount: 36,
+      note: 'lorem ipsum dolor sit amet'
+    }
+    await request(BASE_URL)
+      .patch(`/api/transactions/${transactionToUpdate.id}`)
+      .send(newData)
+      .set('Authorization', apiToken)
+      .expect(StatusCodes.OK)
+      .expect('Content-Type', /json/)
+      .then(res => {
+        expect(res.body).to.not.have.property('errors')
+      })
+
+    await transactionToUpdate.refresh()
+
+    expect(transactionToUpdate.toObject()).to.include(newData, 'Não conseguiu atualizar os dados corretamente no banco de dados')
+  })
+
+})
+
 test.group('DELETE /api/transactions/:id', (group) => {
 
   group.beforeEach(cleanUpDatabase)

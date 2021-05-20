@@ -9,7 +9,10 @@ export default class TransactionPolicy extends BasePolicy {
   }
 
   public async update(user: User, transaction: Transaction) {
-    return transaction.userId === user.id
+    return (
+      transaction.userId === user.id &&
+      transaction.editable === true
+    )
   }
 
   public async delete(user: User, transaction: Transaction) {
