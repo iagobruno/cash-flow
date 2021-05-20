@@ -1,4 +1,4 @@
-import { BaseModel, beforeCreate, belongsTo, column, computed, BelongsTo, afterSave, afterDelete } from '@ioc:Adonis/Lucid/Orm'
+import { BaseModel, beforeCreate, belongsTo, column, computed, BelongsTo, afterSave, afterDelete, scope } from '@ioc:Adonis/Lucid/Orm'
 import { DateTime } from 'luxon'
 import { v4 as uuid } from 'uuid'
 import Account from 'App/Models/Account'
@@ -55,6 +55,17 @@ export default class Transaction extends BaseModel {
   @belongsTo(() => Category)
   public category: BelongsTo<typeof Category>
   //#endregion Relationships
+
+
+  //#region Query scopes
+  public static fromMonth = scope((query, month: number) => {
+    query.whereRaw('EXTRACT(MONTH FROM created_at) = ?', [month])
+  })
+
+  public static fromYear = scope((query, year: number) => {
+    query.whereRaw('EXTRACT(YEAR FROM created_at) = ?', [year])
+  })
+  //#endregion
 
 
   //#region Hooks

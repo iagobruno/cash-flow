@@ -3,7 +3,7 @@ import Transaction from 'App/Models/Transaction'
 import NewTransactionValidator from 'App/Validators/NewTransactionValidator'
 import TransactionsFiltersValidator from 'App/Validators/TransactionsFiltersValidator'
 import UpdateTransactionValidator from 'App/Validators/UpdateTransactionValidator'
-import { DateTime } from 'luxon'
+import { now } from 'App/utils'
 
 export default class TransactionsController {
 
@@ -16,12 +16,12 @@ export default class TransactionsController {
       category,
       account,
       month,
-      year = DateTime.now().get('year'),
+      year = now.get('year'),
     } = await request.validate(TransactionsFiltersValidator)
 
     const query = loggedUser.related('transactions').query()
-      .whereRaw('EXTRACT(MONTH FROM created_at) = ?', [month])
-      .andWhereRaw('EXTRACT(YEAR FROM created_at) = ?', [year])
+      .apply(scope => scope.fromMonth(month))
+      .apply(scope => scope.fromYear(year))
       .orderBy('created_at', 'desc')
 
     if (kind) {

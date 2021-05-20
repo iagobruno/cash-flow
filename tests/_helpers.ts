@@ -41,3 +41,13 @@ export function mapIds(array: Array<WithId>): string[] {
     return item.id
   })
 }
+
+export function deepConsoleLog(data: any, depth: number | null = null) {
+  console.log(
+    require('util').inspect(data, {
+      depth,
+      colors: true,
+      showHidden: false
+    })
+  )
+}
