@@ -1,4 +1,4 @@
-import { ApplicationContract } from '@ioc:Adonis/Core/Application'
+import type { ApplicationContract } from '@ioc:Adonis/Core/Application'
 
 export default class AppProvider {
   constructor (protected app: ApplicationContract) {
@@ -10,6 +10,12 @@ export default class AppProvider {
 
   public async boot () {
     // IoC container is ready
+    const { BaseModel } = await import('@ioc:Adonis/Lucid/Orm')
+    const { default: Database } = await import('@ioc:Adonis/Lucid/Database')
+    const { default: CamelCaseNamingStrategy } = await import('App/Services/OrmNamingStrategy')
+
+    BaseModel.namingStrategy = new CamelCaseNamingStrategy()
+    Database.SimplePaginator.namingStrategy = new CamelCaseNamingStrategy()
   }
 
   public async ready () {

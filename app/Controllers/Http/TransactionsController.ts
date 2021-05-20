@@ -57,18 +57,9 @@ export default class TransactionsController {
 
   public async store({ request, auth }: HttpContextContract) {
     const loggedUser = auth.user!
-    const {
-      account_id,
-      category_id,
-      kind,
-      ...data
-    } = await request.validate(NewTransactionValidator)
+    const { kind, ...data } = await request.validate(NewTransactionValidator)
 
-    const transaction = await loggedUser.related('transactions').create({
-      ...data,
-      categoryId: category_id,
-      accountId: account_id
-    })
+    const transaction = await loggedUser.related('transactions').create(data)
 
     return transaction
   }

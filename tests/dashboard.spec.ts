@@ -37,7 +37,7 @@ test.group('GET /api/dashboard', (group) => {
         expect(res.body.transactions).to.be.an('array').with.lengthOf(expectedTransactionsLength)
 
         res.body.transactions.forEach(item => {
-          expect(item).to.have.property('user_id', user.id, 'Retornou uma transação de outro usuário')
+          expect(item).to.have.property('userId', user.id, 'Retornou uma transação de outro usuário')
         })
       })
   })
@@ -59,7 +59,7 @@ test.group('GET /api/dashboard', (group) => {
         expect(res.body.accounts).to.be.an('array').with.lengthOf(expectedAccountsLength)
 
         res.body.accounts.forEach(item => {
-          expect(item).to.have.property('user_id', user.id, 'Retornou uma transação de outro usuário')
+          expect(item).to.have.property('userId', user.id, 'Retornou uma transação de outro usuário')
         })
       })
   })
@@ -126,7 +126,7 @@ test.group('GET /api/dashboard', (group) => {
     expect(data).to.have.property('transactions')
     expect(data.transactions).to.be.an('array').with.lengthOf(expectedTransactionsLength)
     data.transactions.forEach(item => {
-      expect(item).to.have.property('user_id', user.id, 'Retornou uma transação de outro usuário')
+      expect(item).to.have.property('userId', user.id, 'Retornou uma transação de outro usuário')
     })
   })
 

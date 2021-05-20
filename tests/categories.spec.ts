@@ -60,8 +60,8 @@ test.group('GET /api/categories', (group) => {
 
     expect(categories).to.be.an('array').with.lengthOf(4)
     categories.forEach(category => {
-      expect(category).to.have.property('user_id', user.id, 'Retornou a categorias de outro usuário')
-      expect(category).to.not.have.property('user_id', otherUser.id, 'Retornou a categorias de outro usuário')
+      expect(category).to.have.property('userId', user.id, 'Retornou a categorias de outro usuário')
+      expect(category).to.not.have.property('userId', otherUser.id, 'Retornou a categorias de outro usuário')
     })
   })
 
@@ -131,7 +131,7 @@ test.group('GET /api/categories/:id', (group) => {
         expect(res.body).to.have.property('name', category.name, 'Não retornou a categoria certa')
         expect(res.body).to.have.property('kind', category.kind, 'Não retornou a categoria certa')
         expect(res.body).to.have.property('icon', category.icon, 'Não retornou a categoria certa')
-        expect(res.body).to.have.property('user_id', user.id, 'Retornou a categoria de outro usuário')
+        expect(res.body).to.have.property('userId', user.id, 'Retornou a categoria de outro usuário')
       })
   })
 })

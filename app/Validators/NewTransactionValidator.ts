@@ -36,10 +36,10 @@ export default class NewTransactionValidator {
     note: schema.string.optional({}, [
       rules.maxLength(255)
     ]),
-    account_id: schema.string({}, [
+    accountId: schema.string({}, [
       rules.exists({ table: 'user_accounts', column: 'id' })
     ]),
-    category_id: schema.string({}, [
+    categoryId: schema.string({}, [
       rules.exists({ table: 'user_categories', column: 'id' })
     ]),
     kind: schema.string.optional({}, [

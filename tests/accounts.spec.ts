@@ -60,8 +60,8 @@ test.group('GET /api/accounts', (group) => {
 
     expect(accounts).to.be.an('array').with.lengthOf(4)
     accounts.forEach(account => {
-      expect(account).to.have.property('user_id', user.id, 'Retornou a conta de outro usuário')
-      expect(account).to.not.have.property('user_id', otherUser.id, 'Retornou a conta de outro usuário')
+      expect(account).to.have.property('userId', user.id, 'Retornou a conta de outro usuário')
+      expect(account).to.not.have.property('userId', otherUser.id, 'Retornou a conta de outro usuário')
     })
   })
 
@@ -131,7 +131,7 @@ test.group('GET /api/accounts/:id', (group) => {
         expect(res.body).to.have.property('name', account.name, 'Não retornou a conta certa')
         expect(res.body).to.have.property('balance', account.balance, 'Não retornou a conta certa')
         expect(res.body).to.have.property('bank', account.bank, 'Não retornou a conta certa')
-        expect(res.body).to.have.property('user_id', user.id, 'Retornou a conta de outro usuário')
+        expect(res.body).to.have.property('userId', user.id, 'Retornou a conta de outro usuário')
       })
   })
 })

@@ -67,7 +67,7 @@ test.group('GET /api/transactions', (group) => {
         expect(res.body).to.not.have.property('errors')
         expect(res.body).to.have.property('meta')
         expect(res.body.meta).to.have.property('total')
-        expect(res.body.meta).to.have.property('current_page')
+        expect(res.body.meta).to.have.property('currentPage')
         expect(res.body).to.have.property('data')
         expect(res.body.data).to.be.an('array')
       })
@@ -145,8 +145,8 @@ test.group('GET /api/transactions', (group) => {
     expect(transactions).to.be.an('array').with.lengthOf(10, 'Retornou transações de outro usuário')
 
     transactions.forEach(transaction => {
-      expect(transaction).to.have.property('user_id', user.id, 'Retornou a transação de outro usuário')
-      expect(transaction).to.not.have.property('user_id', otherUser.id, 'Retornou a transação de outro usuário')
+      expect(transaction).to.have.property('userId', user.id, 'Retornou a transação de outro usuário')
+      expect(transaction).to.not.have.property('userId', otherUser.id, 'Retornou a transação de outro usuário')
     })
   })
 
@@ -251,8 +251,8 @@ test.group('GET /api/transactions', (group) => {
       .then(res => {
         expect(res.body.data).to.be.an('array').with.lengthOf(3, 'Retornou transações a mais')
         res.body.data.forEach(transaction => {
-          expect(transaction).to.have.property('category_id', category1.id, 'Retornou transações de outra categoria')
-          expect(transaction).to.not.have.property('category_id', category2.id, 'Retornou transações de outra categoria')
+          expect(transaction).to.have.property('categoryId', category1.id, 'Retornou transações de outra categoria')
+          expect(transaction).to.not.have.property('categoryId', category2.id, 'Retornou transações de outra categoria')
         })
       })
   })
@@ -306,8 +306,8 @@ test.group('GET /api/transactions', (group) => {
       .then(res => {
         expect(res.body.data).to.be.an('array').with.lengthOf(3, 'Retornou transações a mais')
         res.body.data.forEach(transaction => {
-          expect(transaction).to.have.property('account_id', account1.id, 'Retornou transações de outra conta')
-          expect(transaction).to.not.have.property('account_id', account2.id, 'Retornou transações de outra conta')
+          expect(transaction).to.have.property('accountId', account1.id, 'Retornou transações de outra conta')
+          expect(transaction).to.not.have.property('accountId', account2.id, 'Retornou transações de outra conta')
         })
       })
   })
@@ -369,7 +369,7 @@ test.group('GET /api/transactions', (group) => {
       .then(res => {
         expect(res.body.data).to.be.an('array').with.lengthOf(3, 'Retornou transações a mais')
         res.body.data.forEach(transaction => {
-          const month = DateTime.fromISO(transaction.created_at).get('month')
+          const month = DateTime.fromISO(transaction.createdAt).get('month')
           expect(month).to.equal(4, 'Retornou uma transação de outro mês')
         })
       })
@@ -385,7 +385,7 @@ test.group('GET /api/transactions', (group) => {
       .then(res => {
         expect(res.body.data).to.be.an('array').with.lengthOf(2, 'Retornou transações a mais')
         res.body.data.forEach(transaction => {
-          const month = DateTime.fromISO(transaction.created_at).get('month')
+          const month = DateTime.fromISO(transaction.createdAt).get('month')
           expect(month).to.equal(5, 'Retornou uma transação de outro mês')
         })
       })
@@ -401,7 +401,7 @@ test.group('GET /api/transactions', (group) => {
       .then(res => {
         expect(res.body.data).to.be.an('array').with.lengthOf(4, 'Retornou transações a mais')
         res.body.data.forEach(transaction => {
-          const month = DateTime.fromISO(transaction.created_at).get('month')
+          const month = DateTime.fromISO(transaction.createdAt).get('month')
           expect(month).to.equal(6, 'Retornou uma transação de outro mês')
         })
       })
@@ -449,8 +449,8 @@ test.group('GET /api/transactions', (group) => {
       const lastItem = list[index - 1]
       if (!lastItem) continue
 
-      const currentDate = DateTime.fromISO(currentItem.created_at)
-      const lastDate = DateTime.fromISO(lastItem.created_at)
+      const currentDate = DateTime.fromISO(currentItem.createdAt)
+      const lastDate = DateTime.fromISO(lastItem.createdAt)
       const isMoreRecentThanPrevious = currentDate.diff(lastDate, 'milliseconds')
         .toObject().milliseconds! <= 0
 
@@ -539,7 +539,7 @@ test.group('GET /api/transactions/:id', (group) => {
         expect(res.body).to.have.property('title', transaction.title, 'Não retornou a transação certa')
         expect(res.body).to.have.property('amount', transaction.amount, 'Não retornou a transação certa')
         expect(res.body).to.have.property('note', transaction.note, 'Não retornou a transação certa')
-        expect(res.body).to.have.property('user_id', user.id, 'Retornou a transação de outro usuário')
+        expect(res.body).to.have.property('userId', user.id, 'Retornou a transação de outro usuário')
       })
   })
 })
@@ -604,7 +604,7 @@ test.group('POST /api/transactions', (group) => {
       .expect('Content-Type', /json/)
       .then(res => {
         expect(res.body).to.have.property('errors')
-        expect(res.body.errors[0]).to.have.property('field', 'account_id')
+        expect(res.body.errors[0]).to.have.property('field', 'accountId')
         expect(res.body.errors[0]).to.have.property('rule', 'required')
       })
 
@@ -613,14 +613,14 @@ test.group('POST /api/transactions', (group) => {
       .send({
         title: 'Gasolina',
         amount: 20.00,
-        account_id: fakeAccount.id
+        accountId: fakeAccount.id
       })
       .set('Authorization', apiToken)
       .expect(StatusCodes.UNPROCESSABLE_ENTITY)
       .expect('Content-Type', /json/)
       .then(res => {
         expect(res.body).to.have.property('errors')
-        expect(res.body.errors[0]).to.have.property('field', 'category_id')
+        expect(res.body.errors[0]).to.have.property('field', 'categoryId')
         expect(res.body.errors[0]).to.have.property('rule', 'required')
       })
   })
@@ -639,8 +639,8 @@ test.group('POST /api/transactions', (group) => {
       .send({
         title: 'Bolsa',
         amount: 0,
-        account_id: fakeAccount.id,
-        category_id: fakeCategory.id,
+        accountId: fakeAccount.id,
+        categoryId: fakeCategory.id,
       })
       .set('Authorization', apiToken)
       .expect(StatusCodes.UNPROCESSABLE_ENTITY)
@@ -666,8 +666,8 @@ test.group('POST /api/transactions', (group) => {
       .send({
         title: 'Gasolina',
         amount: 20.00,
-        account_id: fakeAccount.id,
-        category_id: fakeCategory.id,
+        accountId: fakeAccount.id,
+        categoryId: fakeCategory.id,
         kind: 'outgo'
       })
       .set('Authorization', apiToken)
@@ -692,15 +692,15 @@ test.group('POST /api/transactions', (group) => {
       .send({
         title: 'Gasolina',
         amount: 20.00,
-        category_id: 'fake-id',
-        account_id: fakeAccount.id,
+        categoryId: 'fake-id',
+        accountId: fakeAccount.id,
       })
       .set('Authorization', apiToken)
       .expect(StatusCodes.UNPROCESSABLE_ENTITY)
       .expect('Content-Type', /json/)
       .then(res => {
         expect(res.body).to.have.property('errors')
-        expect(res.body.errors[0]).to.have.property('field', 'category_id')
+        expect(res.body.errors[0]).to.have.property('field', 'categoryId')
         expect(res.body.errors[0]).to.have.property('rule', 'exists')
       })
   })
@@ -717,15 +717,15 @@ test.group('POST /api/transactions', (group) => {
       .send({
         title: 'Gasolina',
         amount: 20.00,
-        account_id: 'fake-id',
-        category_id: fakeCategory.id,
+        accountId: 'fake-id',
+        categoryId: fakeCategory.id,
       })
       .set('Authorization', apiToken)
       .expect(StatusCodes.UNPROCESSABLE_ENTITY)
       .expect('Content-Type', /json/)
       .then(res => {
         expect(res.body).to.have.property('errors')
-        expect(res.body.errors[0]).to.have.property('field', 'account_id')
+        expect(res.body.errors[0]).to.have.property('field', 'accountId')
         expect(res.body.errors[0]).to.have.property('rule', 'exists')
       })
   })
@@ -738,15 +738,15 @@ test.group('POST /api/transactions', (group) => {
     const apiToken = await generateAnApiToken(user)
     const category = user.categories[0]
     const account = user.accounts[0]
-
+    console.log('account.id', account.id)
     const createdTransaction = await request(BASE_URL)
       .post(`/api/transactions`)
       .send({
         title: 'Blusa nova',
         amount: 32.00,
         note: 'Lorem ipsum dolor',
-        account_id: account.id,
-        category_id: category.id,
+        accountId: account.id,
+        categoryId: category.id,
       })
       .set('Authorization', apiToken)
       .expect(StatusCodes.OK)
@@ -777,8 +777,8 @@ test.group('POST /api/transactions', (group) => {
       .send({
         title: 'Blusa nova',
         amount: 32.00,
-        account_id: account.id,
-        category_id: category.id,
+        accountId: account.id,
+        categoryId: category.id,
       })
       .set('Authorization', apiToken)
       .expect(StatusCodes.OK)
@@ -805,8 +805,8 @@ test.group('POST /api/transactions', (group) => {
       .send({
         title: 'Blusa nova',
         amount: 32.00,
-        account_id: account.id,
-        category_id: category.id,
+        accountId: account.id,
+        categoryId: category.id,
       })
       .set('Authorization', apiToken)
       .expect(StatusCodes.OK)
@@ -833,8 +833,8 @@ test.group('POST /api/transactions', (group) => {
       .send({
         title: 'Supermercado',
         amount: 112.43,
-        account_id: account.id,
-        category_id: category.id,
+        accountId: account.id,
+        categoryId: category.id,
       })
       .set('Authorization', apiToken)
       .expect(StatusCodes.OK)
@@ -848,8 +848,8 @@ test.group('POST /api/transactions', (group) => {
       .send({
         title: 'Conserto do Carro',
         amount: 350.00,
-        account_id: account.id,
-        category_id: category.id,
+        accountId: account.id,
+        categoryId: category.id,
       })
       .set('Authorization', apiToken)
       .expect(StatusCodes.OK)
@@ -873,8 +873,8 @@ test.group('POST /api/transactions', (group) => {
       .send({
         title: 'Supermercado',
         amount: 67.24,
-        account_id: account.id,
-        category_id: category.id,
+        accountId: account.id,
+        categoryId: category.id,
       })
       .set('Authorization', apiToken)
       .expect(StatusCodes.OK)
@@ -889,8 +889,8 @@ test.group('POST /api/transactions', (group) => {
       .send({
         title: 'Produtos de higiene',
         amount: 22.41,
-        account_id: account.id,
-        category_id: category.id,
+        accountId: account.id,
+        categoryId: category.id,
       })
       .set('Authorization', apiToken)
       .expect(StatusCodes.OK)
