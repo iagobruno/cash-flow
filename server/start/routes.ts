@@ -30,6 +30,17 @@ Route.group(() => {
   .middleware('auth:web,api')
 
 
+const initNext = Env.get('NODE_ENV') !== 'testing'
+if (initNext) {
+  const { nextRequestHandler } = require('../../client')
+
+  // Let NextJs handle other paths
+  Route.get('*', ({ request, response }) => {
+    return nextRequestHandler(request.request, response.response)
+  })
+}
+
+
 
 
 if (Env.get('NODE_ENV') === 'development') {
