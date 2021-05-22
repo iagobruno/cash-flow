@@ -1,5 +1,6 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import DashboardFiltersValidator from 'App/Validators/DashboardFiltersValidator'
+import { string } from '@ioc:Adonis/Core/Helpers'
 import { now } from 'App/utils'
 
 export default class DashboardController {
@@ -47,7 +48,7 @@ export default class DashboardController {
     return {
       user_balance: loggedUser.balance,
       month_report: {
-        name: now.get('monthLong'),
+        name: string.capitalCase(now.get('monthLong') as any),
         balance: month_balance,
         savings: parseFloat(((income_balance - outgo_balance) / income_balance * 100).toFixed(2)),
         income_balance,
@@ -55,7 +56,6 @@ export default class DashboardController {
       },
       outgo_by_category,
       accounts,
-      transactions
     }
   }
 

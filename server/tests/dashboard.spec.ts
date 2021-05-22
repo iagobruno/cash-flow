@@ -20,28 +20,6 @@ test.group('GET /api/dashboard', (group) => {
       })
   })
 
-  test('Deve retornar a lista de transações do usuário', async () => {
-    const {
-      user,
-      expectedTransactionsLength
-    } = await createFakeDashboardData()
-    const apiToken = await generateAnApiToken(user)
-
-    await request(BASE_URL)
-      .get(`/api/dashboard`)
-      .set('Authorization', apiToken)
-      .expect(StatusCodes.OK)
-      .expect('Content-Type', /json/)
-      .then(res => {
-        expect(res.body).to.have.property('transactions')
-        expect(res.body.transactions).to.be.an('array').with.lengthOf(expectedTransactionsLength)
-
-        res.body.transactions.forEach(item => {
-          expect(item).to.have.property('userId', user.id, 'Retornou uma transação de outro usuário')
-        })
-      })
-  })
-
   test('Deve retornar a lista de contas do usuário', async () => {
     const {
       user,
@@ -90,7 +68,7 @@ test.group('GET /api/dashboard', (group) => {
       })
   })
 
-  test('Deve permitir retornar o relatório do outro mês', async () => {
+  test('Deve conseguir retornar um relatório de outro mês', async () => {
     const otherDate = DateTime.now().minus({ months: 1 })
     const {
       user,
@@ -122,13 +100,6 @@ test.group('GET /api/dashboard', (group) => {
     expect(month_report).to.have.property('outgo_balance', expectedOutgoBalance)
     const expectedSavings = parseFloat(((expectedIncomeBalance - expectedOutgoBalance) / expectedIncomeBalance * 100).toFixed(2))
     expect(month_report).to.have.property('savings', expectedSavings)
-
-    expect(data).to.have.property('transactions')
-    expect(data.transactions).to.be.an('array').with.lengthOf(expectedTransactionsLength)
-    data.transactions.forEach(item => {
-      expect(item).to.have.property('userId', user.id, 'Retornou uma transação de outro usuário')
-    })
-  })
 
 })
 
