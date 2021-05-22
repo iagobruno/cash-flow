@@ -3,6 +3,7 @@ import Transaction from 'App/Models/Transaction'
 import NewTransactionValidator from 'App/Validators/NewTransactionValidator'
 import TransactionsFiltersValidator from 'App/Validators/TransactionsFiltersValidator'
 import UpdateTransactionValidator from 'App/Validators/UpdateTransactionValidator'
+import type { ModelObject } from '@ioc:Adonis/Lucid/Model'
 import { now } from 'App/utils'
 
 export default class TransactionsController {
@@ -41,10 +42,27 @@ export default class TransactionsController {
       query.andWhere('account_id', '=', account)
     }
 
-    const transactions = await query
+    const queryResults = await query
       // .debug(true)
       .paginate(page, per_page)
-    return transactions
+
+    const groups = new Map<string, Array<ModelObject>>()
+
+    queryResults.forEach(row => {
+      // @ts-ignore
+      const dayLabel = row.createdAt.get('weekdayLong').split('-')[0] + ', ' + row.createdAt.get('daysInMonth')
+      const transaction = row.toJSON()
+
+      if (!groups.has(dayLabel)) {
+        groups.set(dayLabel, [])
+      }
+      groups.get(dayLabel)?.push(transaction)
+    })
+
+    return {
+      meta: queryResults.getMeta(),
+      data: Array.from(groups.entries()),
+    }
   }
 
   public async show({ params, bouncer }: HttpContextContract) {

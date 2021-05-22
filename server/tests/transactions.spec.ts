@@ -1,7 +1,7 @@
 import test from 'japa'
 import { expect } from 'chai'
 import request from 'supertest'
-import { BASE_URL, cleanUpDatabase, generateAnApiToken } from './_helpers'
+import { BASE_URL, cleanUpDatabase, deepConsoleLog, generateAnApiToken } from './_helpers'
 import { StatusCodes } from 'http-status-codes'
 import UserFactory from 'Database/factories/UserFactory'
 import Transaction from 'App/Models/Transaction'
@@ -70,6 +70,7 @@ test.group('GET /api/transactions', (group) => {
         expect(res.body.meta).to.have.property('currentPage')
         expect(res.body).to.have.property('data')
         expect(res.body.data).to.be.an('array')
+        expect(res.body.data[0][1]).to.be.an('array')
       })
   })
 
@@ -97,8 +98,11 @@ test.group('GET /api/transactions', (group) => {
       .expect('Content-Type', /json/)
       .then(res => {
         expect(res.body).to.not.have.property('errors')
-        expect(res.body.data).to.be.an('array').with.lengthOf(5)
-        res.body.data.forEach(transaction => {
+
+        const transactions = res.body.data.map(group => group[1]).flat() as any[]
+
+        expect(transactions).to.be.an('array').with.lengthOf(5)
+        transactions.forEach(transaction => {
           expect(transaction).to.have.property('amount')
           expect(transaction).to.have.property('title')
           expect(transaction).to.have.property('kind')
@@ -132,7 +136,7 @@ test.group('GET /api/transactions', (group) => {
       })
       .createMany(6)
 
-    const transactions = await request(BASE_URL)
+    const res = await request(BASE_URL)
       .get(`/api/transactions`)
       .query({
         month: now.get('month')
@@ -140,10 +144,10 @@ test.group('GET /api/transactions', (group) => {
       .set('Authorization', apiToken)
       .expect(StatusCodes.OK)
       .expect('Content-Type', /json/)
-      .then(res => res.body.data as unknown[])
+
+    const transactions = res.body.data.map(group => group[1]).flat() as any[]
 
     expect(transactions).to.be.an('array').with.lengthOf(10, 'Retornou transações de outro usuário')
-
     transactions.forEach(transaction => {
       expect(transaction).to.have.property('userId', user.id, 'Retornou a transação de outro usuário')
       expect(transaction).to.not.have.property('userId', otherUser.id, 'Retornou a transação de outro usuário')
@@ -198,8 +202,10 @@ test.group('GET /api/transactions', (group) => {
       .expect(StatusCodes.OK)
       .expect('Content-Type', /json/)
       .then(res => {
-        expect(res.body.data).to.be.an('array').with.lengthOf(4, 'Retornou transações a mais')
-        res.body.data.forEach(transaction => {
+        const transactions = res.body.data.map(group => group[1]).flat() as any[]
+
+        expect(transactions).to.be.an('array').with.lengthOf(4, 'Retornou transações a mais')
+        transactions.forEach(transaction => {
           expect(transaction.amount).to.be.greaterThan(0)
         })
       })
@@ -214,8 +220,10 @@ test.group('GET /api/transactions', (group) => {
       .expect(StatusCodes.OK)
       .expect('Content-Type', /json/)
       .then(res => {
-        expect(res.body.data).to.be.an('array').with.lengthOf(6, 'Retornou transações a mais')
-        res.body.data.forEach(transaction => {
+        const transactions = res.body.data.map(group => group[1]).flat() as any[]
+
+        expect(transactions).to.be.an('array').with.lengthOf(6, 'Retornou transações a mais')
+        transactions.forEach(transaction => {
           expect(transaction.amount).to.be.lessThan(0)
         })
       })
@@ -249,8 +257,10 @@ test.group('GET /api/transactions', (group) => {
       .expect(StatusCodes.OK)
       .expect('Content-Type', /json/)
       .then(res => {
-        expect(res.body.data).to.be.an('array').with.lengthOf(3, 'Retornou transações a mais')
-        res.body.data.forEach(transaction => {
+        const transactions = res.body.data.map(group => group[1]).flat() as any[]
+
+        expect(transactions).to.be.an('array').with.lengthOf(3, 'Retornou transações a mais')
+        transactions.forEach(transaction => {
           expect(transaction).to.have.property('categoryId', category1.id, 'Retornou transações de outra categoria')
           expect(transaction).to.not.have.property('categoryId', category2.id, 'Retornou transações de outra categoria')
         })
@@ -304,8 +314,10 @@ test.group('GET /api/transactions', (group) => {
       .expect(StatusCodes.OK)
       .expect('Content-Type', /json/)
       .then(res => {
-        expect(res.body.data).to.be.an('array').with.lengthOf(3, 'Retornou transações a mais')
-        res.body.data.forEach(transaction => {
+        const transactions = res.body.data.map(group => group[1]).flat() as any[]
+
+        expect(transactions).to.be.an('array').with.lengthOf(3, 'Retornou transações a mais')
+        transactions.forEach(transaction => {
           expect(transaction).to.have.property('accountId', account1.id, 'Retornou transações de outra conta')
           expect(transaction).to.not.have.property('accountId', account2.id, 'Retornou transações de outra conta')
         })
@@ -367,8 +379,10 @@ test.group('GET /api/transactions', (group) => {
       .expect(StatusCodes.OK)
       .expect('Content-Type', /json/)
       .then(res => {
-        expect(res.body.data).to.be.an('array').with.lengthOf(3, 'Retornou transações a mais')
-        res.body.data.forEach(transaction => {
+        const transactions = res.body.data.map(group => group[1]).flat() as any[]
+
+        expect(transactions).to.be.an('array').with.lengthOf(3, 'Retornou transações a mais')
+        transactions.forEach(transaction => {
           const month = DateTime.fromISO(transaction.createdAt).get('month')
           expect(month).to.equal(4, 'Retornou uma transação de outro mês')
         })
@@ -383,8 +397,10 @@ test.group('GET /api/transactions', (group) => {
       .expect(StatusCodes.OK)
       .expect('Content-Type', /json/)
       .then(res => {
-        expect(res.body.data).to.be.an('array').with.lengthOf(2, 'Retornou transações a mais')
-        res.body.data.forEach(transaction => {
+        const transactions = res.body.data.map(group => group[1]).flat() as any[]
+
+        expect(transactions).to.be.an('array').with.lengthOf(2, 'Retornou transações a mais')
+        transactions.forEach(transaction => {
           const month = DateTime.fromISO(transaction.createdAt).get('month')
           expect(month).to.equal(5, 'Retornou uma transação de outro mês')
         })
@@ -399,8 +415,10 @@ test.group('GET /api/transactions', (group) => {
       .expect(StatusCodes.OK)
       .expect('Content-Type', /json/)
       .then(res => {
-        expect(res.body.data).to.be.an('array').with.lengthOf(4, 'Retornou transações a mais')
-        res.body.data.forEach(transaction => {
+        const transactions = res.body.data.map(group => group[1]).flat() as any[]
+
+        expect(transactions).to.be.an('array').with.lengthOf(4, 'Retornou transações a mais')
+        transactions.forEach(transaction => {
           const month = DateTime.fromISO(transaction.createdAt).get('month')
           expect(month).to.equal(6, 'Retornou uma transação de outro mês')
         })
@@ -434,7 +452,7 @@ test.group('GET /api/transactions', (group) => {
 
     const apiToken = await generateAnApiToken(user)
 
-    const list = await request(BASE_URL)
+    const res = await request(BASE_URL)
       .get(`/api/transactions`)
       .query({
         month: 8,
@@ -442,11 +460,12 @@ test.group('GET /api/transactions', (group) => {
       .set('Authorization', apiToken)
       .expect(StatusCodes.OK)
       .expect('Content-Type', /json/)
-      .then(res => res.body.data)
 
-    for (let index = 0; index < list.length; index++) {
-      const currentItem = list[index]
-      const lastItem = list[index - 1]
+    const transactions = res.body.data.map(group => group[1]).flat() as any[]
+
+    for (let index = 0; index < transactions.length; index++) {
+      const currentItem = transactions[index]
+      const lastItem = transactions[index - 1]
       if (!lastItem) continue
 
       const currentDate = DateTime.fromISO(currentItem.createdAt)
