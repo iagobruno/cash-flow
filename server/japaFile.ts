@@ -1,7 +1,8 @@
 import 'reflect-metadata'
-import { join } from 'path'
-import getPort from 'get-port'
 import japa from 'japa'
+import getPort from 'get-port'
+import execa from 'execa'
+import { join } from 'path'
 import sourceMapSupport from 'source-map-support'
 
 process.env.NODE_ENV = 'testing'
@@ -14,8 +15,14 @@ console.clear()
  */
 japa.configure({
   files: getTestFiles(),
-  before: [startHttpServer],
-  after: [closeDatabaseConnection],
+  before: [
+    runMigrations,
+    startHttpServer
+  ],
+  after: [
+    rollbackMigrations,
+    closeDatabaseConnection
+  ],
   bail: true,
   timeout: 1000 * 10,
 })
@@ -31,6 +38,8 @@ function getTestFiles() {
 }
 
 async function startHttpServer() {
+  console.log('Starting server...')
+
   const { Ignitor } = await import('@adonisjs/core/build/src/Ignitor')
   process.env.PORT = String(await getPort())
   await new Ignitor(__dirname).httpServer().start()
@@ -39,4 +48,20 @@ async function startHttpServer() {
 async function closeDatabaseConnection() {
   const { default: Database } = await import('@ioc:Adonis/Lucid/Database')
   await Database.manager.closeAll()
+}
+
+async function runMigrations() {
+  console.log('Running migrations...')
+
+  await execa.node('ace', ['migration:run'], {
+    stdio: 'inherit',
+  })
+}
+
+async function rollbackMigrations() {
+  console.log('Rollbacking migrations...')
+
+  await execa.node('ace', ['migration:rollback'], {
+    stdio: 'inherit',
+  })
 }
