@@ -4,6 +4,7 @@ import request from 'supertest'
 import { BASE_URL, cleanUpDatabase, deepConsoleLog, generateAnApiToken } from './_helpers'
 import { StatusCodes } from 'http-status-codes'
 import UserFactory from 'Database/factories/UserFactory'
+import { string } from '@ioc:Adonis/Core/Helpers'
 import { DateTime } from 'luxon'
 
 test.group('GET /api/dashboard', (group) => {
@@ -59,7 +60,7 @@ test.group('GET /api/dashboard', (group) => {
       .then(res => {
         expect(res.body).to.have.property('month_report')
         const { month_report } = res.body
-        expect(month_report).to.have.property('name', DateTime.now().get('monthLong'), 'Retornou o balanço de outro mês')
+        expect(month_report).to.have.property('name', string.capitalCase(DateTime.now().get('monthLong') as any), 'Retornou o balanço de outro mês')
         expect(month_report).to.have.property('balance', expectedMonthBalance, 'O balanço do mês tá errado')
         expect(month_report).to.have.property('income_balance', expectedIncomeBalance)
         expect(month_report).to.have.property('outgo_balance', expectedOutgoBalance)
@@ -94,12 +95,13 @@ test.group('GET /api/dashboard', (group) => {
 
     expect(data).to.have.property('month_report')
     const { month_report } = data
-    expect(month_report).to.have.property('name', DateTime.now().get('monthLong'), 'Retornou o balanço de outro mês')
+    expect(month_report).to.have.property('name', string.capitalCase(DateTime.now().get('monthLong') as any), 'Retornou o balanço de outro mês')
     expect(month_report).to.have.property('balance', expectedMonthBalance, 'O balanço do mês tá errado')
     expect(month_report).to.have.property('income_balance', expectedIncomeBalance)
     expect(month_report).to.have.property('outgo_balance', expectedOutgoBalance)
     const expectedSavings = parseFloat(((expectedIncomeBalance - expectedOutgoBalance) / expectedIncomeBalance * 100).toFixed(2))
     expect(month_report).to.have.property('savings', expectedSavings)
+  })
 
 })
 
