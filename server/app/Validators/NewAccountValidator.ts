@@ -1,6 +1,6 @@
 import { schema, rules } from '@ioc:Adonis/Core/Validator'
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
-import { HEXColorRegex } from 'App/utils'
+import { HEXColorRegex } from 'App/helpers'
 
 export default class NewAccountValidator {
   constructor (protected ctx: HttpContextContract) {

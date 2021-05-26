@@ -1,7 +1,7 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import DashboardFiltersValidator from 'App/Validators/DashboardFiltersValidator'
 import { string } from '@ioc:Adonis/Core/Helpers'
-import { now } from 'App/utils'
+import { now } from 'App/helpers'
 
 export default class DashboardController {
 
