@@ -1,6 +1,6 @@
 import { afterCreate, BaseModel, beforeCreate, column, hasMany } from '@ioc:Adonis/Lucid/Orm'
 import Database, { TransactionClientContract } from '@ioc:Adonis/Lucid/Database'
-import type { HasMany } from '@ioc:Adonis/Lucid/Relations'
+import type { HasMany } from '@ioc:Adonis/Lucid/Orm'
 import { DateTime } from 'luxon'
 import { v4 as uuid } from 'uuid'
 import Account from 'App/Models/Account'

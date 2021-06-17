@@ -30,12 +30,12 @@ export default class GoogleAuthController {
      */
     const user = await User.firstOrNew(
       {
-        email: googleUser.email,
+        email: googleUser.email!,
       },
       {
-        email: googleUser.email,
+        email: googleUser.email!,
         name: googleUser.name,
-        photoUrl: googleUser.avatarUrl,
+        photoUrl: googleUser.avatarUrl!,
         accessToken: googleUser.token.token,
       }
     )

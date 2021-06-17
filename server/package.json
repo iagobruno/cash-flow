@@ -9,7 +9,7 @@
     "test-watch": "nodemon --exec \"yarn run test\" -e ts,js,env,json"
   },
   "devDependencies": {
-    "@adonisjs/assembler": "^5.0.0",
+    "@adonisjs/assembler": "^5.3.1",
     "@types/chai": "^4.2.18",
     "@types/lodash": "^4.14.169",
     "@types/node": "^15.3.0",
@@ -27,11 +27,11 @@
     "youch-terminal": "^1.1.1"
   },
   "dependencies": {
-    "@adonisjs/ally": "^3.2.1",
+    "@adonisjs/ally": "^4.0.2",
     "@adonisjs/auth": "^8.0.3",
     "@adonisjs/bouncer": "^2.2.1",
-    "@adonisjs/core": "^5.1.0",
-    "@adonisjs/lucid": "^14.0.2",
+    "@adonisjs/core": "^5.1.8",
+    "@adonisjs/lucid": "^15.0.1",
     "@adonisjs/repl": "^3.0.0",
     "@adonisjs/session": "^6.0.3",
     "http-status-codes": "^2.1.4",

@@ -3,7 +3,7 @@ import Transaction from 'App/Models/Transaction'
 import NewTransactionValidator from 'App/Validators/NewTransactionValidator'
 import TransactionsFiltersValidator from 'App/Validators/TransactionsFiltersValidator'
 import UpdateTransactionValidator from 'App/Validators/UpdateTransactionValidator'
-import type { ModelObject } from '@ioc:Adonis/Lucid/Model'
+import type { ModelObject } from '@ioc:Adonis/Lucid/Orm'
 import { now } from 'App/helpers'
 
 export default class TransactionsController {
