@@ -30,7 +30,7 @@ Route.group(() => {
   .middleware('auth:web,api')
 
 
-const initNext = Env.get('NODE_ENV') !== 'testing'
+const initNext = Env.get('NODE_ENV') !== 'testing' && !!process.argv.find(cmd => cmd.includes('server.ts'))
 if (initNext) {
   const { nextRequestHandler } = require('../../client')
 
