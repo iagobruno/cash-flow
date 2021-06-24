@@ -1,15 +1,15 @@
-import { BaseModel, beforeCreate, belongsTo, HasMany, column, BelongsTo, hasMany, beforeSave } from '@ioc:Adonis/Lucid/Orm'
+import { BaseModel, belongsTo, HasMany, column, BelongsTo, hasMany } from '@ioc:Adonis/Lucid/Orm'
 import Database, { TransactionClientContract } from '@ioc:Adonis/Lucid/Database'
 import { DateTime } from 'luxon'
-import { v4 as uuid } from 'uuid'
 import User from 'App/Models/User'
 import Transaction from 'App/Models/Transaction'
+import uuid from 'App/Services/uuidDecorator'
 
 export default class Account extends BaseModel {
   public static table = 'user_accounts'
-  public static selfAssignPrimaryKey = true
 
   @column({ isPrimary: true })
+  @uuid()
   public id: string
 
   @column()
@@ -36,6 +36,15 @@ export default class Account extends BaseModel {
 
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   public updatedAt: DateTime
+
+
+  //#region Relationships
+  @belongsTo(() => User)
+  public user: BelongsTo<typeof User>
+
+  @hasMany(() => Transaction)
+  public transactions: HasMany<typeof Transaction>
+  //#endregion Relationships
 
 
   //#region Methods
@@ -69,19 +78,6 @@ export default class Account extends BaseModel {
   //#endregion
 
 
-  //#region Relationships
-  @belongsTo(() => User)
-  public user: BelongsTo<typeof User>
-
-  @hasMany(() => Transaction)
-  public transactions: HasMany<typeof Transaction>
-  //#endregion Relationships
-
-
   //#region Hooks
-  @beforeCreate()
-  public static assignUuid(account: Account) {
-    account.id = uuid()
-  }
   //#endregion Hooks
 }

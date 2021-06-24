@@ -1,14 +1,14 @@
-import { BaseModel, beforeCreate, belongsTo, BelongsTo, column, hasMany, HasMany } from '@ioc:Adonis/Lucid/Orm'
-import { v4 as uuid } from 'uuid'
+import { BaseModel, belongsTo, BelongsTo, column, hasMany, HasMany } from '@ioc:Adonis/Lucid/Orm'
 import { DateTime } from 'luxon'
 import Transaction from 'App/Models/Transaction'
-import User from './User'
+import User from 'App/Models/User'
+import uuid from 'App/Services/uuidDecorator'
 
 export default class Category extends BaseModel {
   public static table = 'user_categories'
-  public static selfAssignPrimaryKey = true
 
   @column({ isPrimary: true })
+  @uuid()
   public id: string
 
   @column()
@@ -43,9 +43,5 @@ export default class Category extends BaseModel {
 
 
   //#region Hooks
-  @beforeCreate()
-  public static assignUuid(cat: Category) {
-    cat.id = uuid()
-  }
   //#endregion
 }

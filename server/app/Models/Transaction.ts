@@ -1,15 +1,15 @@
-import { BaseModel, beforeCreate, belongsTo, column, computed, BelongsTo, afterSave, afterDelete, scope } from '@ioc:Adonis/Lucid/Orm'
+import { BaseModel, belongsTo, column, computed, BelongsTo, afterSave, afterDelete, scope } from '@ioc:Adonis/Lucid/Orm'
 import { DateTime } from 'luxon'
-import { v4 as uuid } from 'uuid'
 import Account from 'App/Models/Account'
 import User from 'App/Models/User'
 import Category from 'App/Models/Category'
+import uuid from 'App/Services/uuidDecorator'
 
 export default class Transaction extends BaseModel {
   public static table = 'accounts_transactions'
-  public static selfAssignPrimaryKey = true
 
   @column({ isPrimary: true })
+  @uuid()
   public id: string
 
   @column()
@@ -69,11 +69,6 @@ export default class Transaction extends BaseModel {
 
 
   //#region Hooks
-  @beforeCreate()
-  public static assignUuid(transaction: Transaction) {
-    transaction.id = uuid()
-  }
-
   @afterSave()
   public static async changeAccountBalance(transaction: Transaction) {
     if (!transaction.account) await transaction.load('account')

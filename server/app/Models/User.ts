@@ -1,16 +1,15 @@
-import { afterCreate, BaseModel, beforeCreate, column, hasMany } from '@ioc:Adonis/Lucid/Orm'
-import Database, { TransactionClientContract } from '@ioc:Adonis/Lucid/Database'
+import { BaseModel, column, hasMany } from '@ioc:Adonis/Lucid/Orm'
 import type { HasMany } from '@ioc:Adonis/Lucid/Orm'
+import Database, { TransactionClientContract } from '@ioc:Adonis/Lucid/Database'
 import { DateTime } from 'luxon'
-import { v4 as uuid } from 'uuid'
+import uuid from 'App/Services/uuidDecorator'
 import Account from 'App/Models/Account'
 import Transaction from 'App/Models/Transaction'
 import Category from 'App/Models/Category'
 
 export default class User extends BaseModel {
-  public static selfAssignPrimaryKey = true
-
   @column({ isPrimary: true })
+  @uuid()
   public id: string
 
   @column()
@@ -34,6 +33,18 @@ export default class User extends BaseModel {
 
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   public updatedAt: DateTime
+
+
+  //#region Relationships
+  @hasMany(() => Account)
+  public accounts: HasMany<typeof Account>
+
+  @hasMany(() => Transaction)
+  public transactions: HasMany<typeof Transaction>
+
+  @hasMany(() => Category)
+  public categories: HasMany<typeof Category>
+  //#endregion Relationships
 
 
   //#region Methods
@@ -109,22 +120,6 @@ export default class User extends BaseModel {
   //#endregion
 
 
-  //#region Relationships
-  @hasMany(() => Account)
-  public accounts: HasMany<typeof Account>
-
-  @hasMany(() => Transaction)
-  public transactions: HasMany<typeof Transaction>
-
-  @hasMany(() => Category)
-  public categories: HasMany<typeof Category>
-  //#endregion Relationships
-
-
   //#region Hooks
-  @beforeCreate()
-  public static async beforeCreate(user: User) {
-    user.id = uuid()
-  }
   //#endregion Hooks
 }
