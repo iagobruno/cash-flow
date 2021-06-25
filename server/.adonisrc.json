@@ -4,7 +4,8 @@
     "@adonisjs/core/build/commands",
     "@adonisjs/repl/build/commands",
     "@adonisjs/lucid/build/commands",
-    "@adonisjs/bouncer/build/commands"
+    "@adonisjs/bouncer/build/commands",
+    "adonis-lucid-filter/build/commands"
   ],
   "exceptionHandlerNamespace": "App/Exceptions/GlobalHandler",
   "aliases": {
@@ -39,7 +40,8 @@
     "@adonisjs/auth",
     "@adonisjs/ally",
     "@adonisjs/session",
-    "@adonisjs/bouncer"
+    "@adonisjs/bouncer",
+    "adonis-lucid-filter"
   ],
   "aceProviders": [
     "@adonisjs/repl"

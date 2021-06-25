@@ -40,7 +40,8 @@
       "@adonisjs/auth",
       "@adonisjs/ally",
       "@adonisjs/session",
-      "@adonisjs/bouncer"
+      "@adonisjs/bouncer",
+      "adonis-lucid-filter"
     ]
   }
 }

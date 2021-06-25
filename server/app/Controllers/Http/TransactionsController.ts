@@ -13,34 +13,13 @@ export default class TransactionsController {
     const {
       page = 1,
       per_page = 50,
-      kind,
-      category,
-      account,
-      month,
-      year = now.get('year'),
+      ...inputs
     } = await request.validate(TransactionsFiltersValidator)
 
-    const query = loggedUser.related('transactions').query()
-      .apply(scope => scope.fromMonth(month))
-      .apply(scope => scope.fromYear(year))
+    const query = Transaction
+      .filter(inputs)
+      .where('user_id', '=', loggedUser.id)
       .orderBy('created_at', 'desc')
-
-    if (kind) {
-      if (kind === 'income') {
-        query.andWhere('amount', '>', 0)
-      }
-      else if (kind === 'outgo') {
-        query.andWhere('amount', '<', 0)
-      }
-    }
-
-    if (category) {
-      query.andWhere('category_id', '=', category)
-    }
-
-    if (account) {
-      query.andWhere('account_id', '=', account)
-    }
 
     const queryResults = await query
       // .debug(true)

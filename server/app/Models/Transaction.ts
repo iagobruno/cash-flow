@@ -1,10 +1,13 @@
 import { BaseModel, belongsTo, column, computed, BelongsTo, afterSave, afterDelete, scope } from '@ioc:Adonis/Lucid/Orm'
 import { DateTime } from 'luxon'
+import { filterable } from '@ioc:Adonis/Addons/LucidFilter'
 import Account from 'App/Models/Account'
 import User from 'App/Models/User'
 import Category from 'App/Models/Category'
 import uuid from 'App/Services/uuidDecorator'
+import TransactionFilter from './Filters/TransactionFilter'
 
+@filterable(TransactionFilter)
 export default class Transaction extends BaseModel {
   public static table = 'accounts_transactions'
 

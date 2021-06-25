@@ -787,6 +787,11 @@ acorn@^8.0.5:
   resolved "https://registry.yarnpkg.com/acorn/-/acorn-8.2.4.tgz#caba24b08185c3b56e3168e97d15ed17f4d31fd0"
   integrity sha512-Ibt84YwBDDA890eDiDCEqcbwvHlBvzzDkU2cGBBDDI1QWT12jTiXIOn2CIw5KK4i6N5Z2HUxwYjzriDyqaqqZg==
 
+adonis-lucid-filter@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/adonis-lucid-filter/-/adonis-lucid-filter-3.0.0.tgz#4d704b2b25d9afe3595e4b4991a9f48688607d2f"
+  integrity sha512-9rhgOWOc6XUjWdp3/FdmbKhfVw42Ywuihb5lLMvtfA/CYGH7leaATaxyXXB7GGSlYYAPiwYNOiqdSVwxMeSd3w==
+
 adonis-preset-ts@^2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/adonis-preset-ts/-/adonis-preset-ts-2.1.0.tgz#3fccdee1c82c574114dc089d8c76dddf5a223054"
