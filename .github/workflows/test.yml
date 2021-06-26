@@ -6,7 +6,7 @@ on:
       - 'server/**'
 
 jobs:
-  test:
+  Run tests:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -16,13 +16,13 @@ jobs:
       with:
         node-version: 16.2.0
 
-    - run: npm install
+    - run: yarn
       working-directory: ./server
 
     - name: Run type-check
       working-directory: ./server
-      run: npm run type-check
+      run: yarn run type-check
 
     - name: Run tests
       working-directory: ./server
-      run: npm run test
+      run: yarn run test
