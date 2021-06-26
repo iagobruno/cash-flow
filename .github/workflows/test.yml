@@ -16,6 +16,9 @@ jobs:
       with:
         node-version: 16.2.0
 
+    - run: npm install
+      working-directory: ./server
+
     - name: Run type-check
       working-directory: ./server
       run: npm run type-check
