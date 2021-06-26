@@ -18,8 +18,8 @@ jobs:
 
     - name: Run type-check
       working-directory: ./server
-      run: npm type-check
+      run: npm run type-check
 
     - name: Run tests
       working-directory: ./server
-      run: npm test
+      run: npm run test
