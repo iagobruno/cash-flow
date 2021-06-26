@@ -1,0 +1,19 @@
+name: Run server-side tests
+
+on:
+  push:
+    paths:
+      - 'server/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup Node environment
+      uses: actions/setup-node@v2
+      with:
+        node-version: 16.2.0
+    - run: cd server
+    - run: npm type-check
+    - run: npm test
