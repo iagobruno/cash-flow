@@ -26,5 +26,3 @@ export default class AppProvider {
     // Cleanup, since app is going down
   }
 }
-
-// run github action 6
