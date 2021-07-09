@@ -19,3 +19,5 @@ sourceMapSupport.install({ handleUncaughtExceptions: false })
 new Ignitor(__dirname)
   .httpServer()
   .start()
+
+// To trigger github action
