@@ -38,10 +38,8 @@ jobs:
         with:
           node-version: 16.2.0
 
-      - uses: actions/cache@v2
-        with:
-          path: '**/node_modules'
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+      - name: Restore dependencies from cache
+        uses: c-hive/gha-yarn-cache@v2
 
       - run: yarn install
 
