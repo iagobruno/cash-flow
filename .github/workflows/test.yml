@@ -1,0 +1,60 @@
+name: Run server-side tests
+
+on:
+  push:
+    paths:
+      - 'server/**'
+
+defaults:
+  run:
+    working-directory: ./server
+
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: 1234
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Node environment
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16.2.0
+          cache: 'yarn'
+
+      - run: yarn install
+
+      - name: Run type-check
+        run: yarn run type-check
+
+      - name: Run tests
+        run: yarn run test
+        env:
+          NODE_ENV: testing
+          PORT: 3333
+          HOST: localhost
+          APP_KEY: foDNRqkdtllRpG28LeDk6es491PQOf-J
+          SESSION_DRIVER: cookie
+          DB_CONNECTION: pg
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_USER: postgres
+          DB_PASSWORD: 1234
+          DB_NAME: postgres
+          GOOGLE_CLIENT_ID: ${{ env.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ env.GOOGLE_CLIENT_SECRET }}
