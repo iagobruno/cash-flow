@@ -75,7 +75,7 @@ const databaseConfig: DatabaseConfig = {
         naturalSort: true,
       },
       useNullAsDefault: true,
-      healthCheck: true,
+      // healthCheck: true,
       debug: false,
     },
 
