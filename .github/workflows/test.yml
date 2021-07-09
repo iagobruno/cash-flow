@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - 'server/**'
+      - '.github/workflows/test.yml'
 
 defaults:
   run:
@@ -60,5 +61,5 @@ jobs:
           DB_USER: postgres
           DB_PASSWORD: 1234
           DB_NAME: postgres
-          GOOGLE_CLIENT_ID: ${{ env.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ env.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
