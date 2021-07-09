@@ -14,6 +14,7 @@ jobs:
   run-tests:
     runs-on: ubuntu-latest
 
+    # See https://docs.github.com/pt/actions/guides/creating-postgresql-service-containers
     services:
       postgres:
         image: postgres
@@ -50,6 +51,7 @@ jobs:
       - name: Run tests
         run: yarn run test
         env:
+          # Adonis environment variables - See https://docs.adonisjs.com/guides/environment-variables
           NODE_ENV: testing
           PORT: 3333
           HOST: localhost
