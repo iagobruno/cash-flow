@@ -39,7 +39,7 @@ jobs:
           node-version: 16.2.0
 
       - name: Restore dependencies from cache
-        uses: iagobruno/gha-yarn-cache@465756e8c5d86b51a23e4621a37ab177378c1df7
+        uses: iagobruno/gha-yarn-cache@1e7135eadad5c3b477a46af41ac7c3f1aba0ebfa
         with:
           directory: server
 
