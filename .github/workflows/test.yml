@@ -39,7 +39,7 @@ jobs:
           node-version: 16.2.0
 
       - name: Restore dependencies from cache
-        uses: c-hive/gha-yarn-cache@v2
+        uses: iagobruno/gha-yarn-cache@9233c702ab3e5c9a17e56da2919a5bd379a57daa
 
       - run: yarn install
 
