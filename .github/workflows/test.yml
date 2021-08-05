@@ -14,7 +14,7 @@ jobs:
   run-tests:
     runs-on: ubuntu-latest
 
-    # See https://docs.github.com/pt/actions/guides/creating-postgresql-service-containers 
+    # See https://docs.github.com/pt/actions/guides/creating-postgresql-service-containers
     services:
       postgres:
         image: postgres
